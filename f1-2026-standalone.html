@@ -1,0 +1,3536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>APEX — F1 2026 Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07090D;--surface:#0C0F18;--card:#101420;--border:#1A2030;--border2:#263040;
+      --red:#E8002D;--gold:#C9A84C;--silver:#A8B8C8;
+      --text:#E8EDF5;--muted:#4A5568;--dim:#2D3748;
+      --mono:'DM Mono',monospace;--cond:'Barlow Condensed',sans-serif;
+      --body:'Barlow',sans-serif;--display:'Bebas Neue',sans-serif;
+      --radius:4px;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.6;overflow-x:hidden}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
+
+    /* ── NAV ── */
+    nav{position:sticky;top:0;z-index:200;background:rgba(7,9,13,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+    .nav-logo{font-family:var(--display);font-size:26px;letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+    .nav-logo em{font-style:normal;color:var(--red)}
+    .nav-badge{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--muted);border:1px solid var(--border2);padding:2px 6px;border-radius:2px;text-transform:uppercase}
+    .nav-links{display:flex;gap:2px}
+    .nav-links a{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:3px;transition:color .2s,background .2s}
+    .nav-links a:hover{color:var(--text);background:var(--card)}
+    .season-pill{font-family:var(--mono);font-size:10px;color:var(--gold);border:1px solid var(--gold);padding:3px 10px;border-radius:20px;letter-spacing:.1em}
+
+    /* ── HERO ── */
+    .hero{position:relative;padding:72px 28px 56px;border-bottom:1px solid var(--border);overflow:hidden}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 85% 45%,rgba(232,0,45,.07) 0%,transparent 70%),radial-gradient(ellipse 35% 55% at 15% 85%,rgba(201,168,76,.05) 0%,transparent 70%),repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,.012) 79px,rgba(255,255,255,.012) 80px);pointer-events:none}
+    .hero-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+    .hero-eyebrow::before{content:'';width:20px;height:1px;background:var(--red);display:block}
+    .hero h1{font-family:var(--display);font-size:clamp(60px,9vw,120px);line-height:.9;letter-spacing:.04em}
+    .hero h1 em{font-style:normal;color:var(--red);display:block}
+    .hero-sub{margin-top:20px;font-family:var(--cond);font-weight:300;font-size:17px;letter-spacing:.05em;color:var(--silver);max-width:520px}
+    .hero-stats{display:flex;gap:28px;margin-top:36px;flex-wrap:wrap}
+    .hero-stat{display:flex;flex-direction:column}
+    .hero-stat-n{font-family:var(--display);font-size:38px;letter-spacing:.04em;line-height:1}
+    .hero-stat-l{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+    .hero-divider{width:1px;background:var(--border2);align-self:stretch;margin:4px 0}
+
+    /* ── TICKER ── */
+    .ticker-wrap{background:var(--card);border-bottom:1px solid var(--border);overflow:hidden;height:38px;display:flex;align-items:center}
+    .ticker-label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;background:var(--red);color:#fff;padding:0 14px;height:100%;display:flex;align-items:center;flex-shrink:0;white-space:nowrap}
+    .ticker-track{display:flex;align-items:center;animation:ticker 50s linear infinite;white-space:nowrap}
+    .ticker-item{display:flex;align-items:center;gap:8px;padding:0 20px;font-family:var(--mono);font-size:11px;color:var(--silver);border-right:1px solid var(--border2)}
+    .ticker-item strong{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.04em;color:var(--text)}
+    .ticker-pts{color:var(--gold)}
+    @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+    /* ── LAYOUT ── */
+    main{max-width:1380px;margin:0 auto;padding:0 28px 80px}
+    .section-header{display:flex;align-items:baseline;padding:44px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px;gap:14px}
+    .section-title{font-family:var(--display);font-size:48px;letter-spacing:.06em;line-height:1}
+    .section-count{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted)}
+    .section-line{flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);margin-left:16px;align-self:center}
+
+    /* ── TABS / FILTERS ── */
+    .tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px}
+    .tab-btn{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:11px 18px;cursor:pointer;transition:color .2s,border-color .2s;margin-bottom:-1px}
+    .tab-btn:hover{color:var(--text)}
+    .tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+    .filter-bar{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+    .filter-btn{font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:5px 12px;border-radius:3px;cursor:pointer;transition:all .2s}
+    .filter-btn:hover{color:var(--text);border-color:var(--border2)}
+    .filter-btn.active{color:var(--red);border-color:var(--red);background:rgba(232,0,45,.08)}
+
+    /* ── CHARTS DASHBOARD ── */
+    .charts-dashboard{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px}
+    .charts-dashboard-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:2px}
+    .chart-card{background:var(--card);border:1px solid var(--border);padding:24px}
+    .chart-card.wide{grid-column:span 2}
+    .chart-title{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--text);margin-bottom:4px}
+    .chart-sub{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:20px}
+    .chart-wrap{position:relative;height:280px}
+    .chart-wrap.tall{height:340px}
+    .chart-wrap.short{height:220px}
+
+    /* ── DRIVER GRID ── */
+    .driver-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:2px}
+    .driver-card{background:var(--card);border:1px solid var(--border);padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .2s}
+    .driver-card:hover{border-color:var(--border2);transform:translateY(-2px);z-index:1}
+    .driver-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tc,var(--red));opacity:0;transition:opacity .25s}
+    .driver-card:hover::before{opacity:1}
+    .driver-card-num{font-family:var(--display);font-size:56px;letter-spacing:.04em;line-height:1;color:var(--tc,var(--red));opacity:.12;position:absolute;right:6px;bottom:2px}
+    .driver-flag{font-size:18px;margin-bottom:8px}
+    .driver-card-name{font-family:var(--cond);font-weight:700;font-size:17px;letter-spacing:.04em;line-height:1.1;margin-bottom:3px}
+    .driver-card-first{font-weight:300;font-size:13px;display:block;color:var(--silver)}
+    .driver-card-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .driver-pts-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:2px 7px;font-family:var(--mono);font-size:12px;color:var(--gold)}
+    .driver-pts-label{font-size:8px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+    .driver-pos-badge{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted)}
+
+    /* ── COMPARE TOOL ── */
+    .compare-wrap{background:var(--card);border:1px solid var(--border);padding:28px;margin-bottom:2px}
+    .compare-selects{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-bottom:24px}
+    .compare-vs{font-family:var(--display);font-size:28px;letter-spacing:.06em;color:var(--muted);text-align:center}
+    .compare-select{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--cond);font-size:15px;font-weight:600;padding:10px 14px;border-radius:var(--radius);cursor:pointer;appearance:none;-webkit-appearance:none}
+    .compare-select:focus{outline:none;border-color:var(--red)}
+    .compare-result{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+    .compare-col{background:var(--surface);border:1px solid var(--border);padding:20px;text-align:center}
+    .compare-driver-name{font-family:var(--cond);font-weight:800;font-size:22px;letter-spacing:.05em}
+    .compare-driver-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+    .compare-stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+    .compare-stat-row:last-child{border-bottom:none}
+    .compare-stat-key{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+    .compare-stat-val{font-family:var(--display);font-size:22px;line-height:1}
+    .compare-winner{color:var(--gold)}
+    .compare-chart-wrap{margin-top:2px;background:var(--card);border:1px solid var(--border);padding:24px}
+
+    /* ── TEAM GRID ── */
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2px}
+    .team-card{background:var(--card);border:1px solid var(--border);padding:22px;position:relative;overflow:hidden;transition:border-color .25s}
+    .team-card:hover{border-color:var(--border2)}
+    .team-accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,var(--red))}
+    .team-card-inner{padding-left:14px}
+    .team-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+    .team-card-name{font-family:var(--cond);font-weight:800;font-size:21px;letter-spacing:.04em;line-height:1.1}
+    .team-card-chassis{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--muted);margin-top:2px}
+    .team-pos-n{font-family:var(--display);font-size:34px;line-height:1}
+    .team-pos-l{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-align:right}
+    .team-detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+    .team-detail-row:last-child{border-bottom:none}
+    .team-detail-key{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+    .team-detail-val{font-weight:500}
+    .team-pts-big{font-family:var(--display);font-size:26px;color:var(--gold)}
+    .team-drivers-row{display:flex;gap:6px;margin-top:12px}
+    .team-driver-chip{font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;background:var(--surface);border:1px solid var(--border2);padding:3px 9px;border-radius:2px;color:var(--silver)}
+
+    /* ── CAR CARDS ── */
+    .cars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:2px}
+    .car-card{background:var(--card);border:1px solid var(--border);padding:22px;position:relative;overflow:hidden;transition:border-color .25s}
+    .car-card:hover{border-color:var(--border2)}
+    .car-accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,var(--red))}
+    .car-card-inner{padding-left:14px}
+    .car-name-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .car-name{font-family:var(--display);font-size:26px;letter-spacing:.06em}
+    .car-team-name{font-family:var(--cond);font-weight:600;font-size:13px;letter-spacing:.05em;color:var(--silver)}
+    .car-engine-badge{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border2);padding:2px 7px;border-radius:2px;margin-top:3px;display:inline-block}
+    .car-metrics{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+    .metric-row{display:flex;align-items:center;gap:10px}
+    .metric-label{font-family:var(--mono);font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);width:116px;flex-shrink:0}
+    .metric-bar-wrap{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+    .metric-bar{height:100%;border-radius:2px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+    .metric-val{font-family:var(--mono);font-size:10px;width:22px;text-align:right}
+
+    /* ── CALENDAR ── */
+    .calendar-list{display:flex;flex-direction:column;gap:2px}
+    .race-row{display:grid;grid-template-columns:50px 1fr 160px 60px 100px;align-items:center;background:var(--card);border:1px solid var(--border);padding:13px 18px;transition:border-color .2s,background .2s;cursor:default}
+    .race-row:hover{border-color:var(--border2);background:rgba(255,255,255,.012)}
+    .race-row.completed{opacity:.62}
+    .race-row.is-next{border-color:var(--red);background:rgba(232,0,45,.04)}
+    .race-round{font-family:var(--display);font-size:21px;letter-spacing:.04em;color:var(--muted)}
+    .race-row.is-next .race-round{color:var(--red)}
+    .race-info{padding:0 14px}
+    .race-name{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.04em}
+    .race-circuit{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted);margin-top:1px}
+    .race-flag{font-size:19px;text-align:center}
+    .race-date-col{font-family:var(--mono);font-size:10px;color:var(--silver);text-align:right;padding-right:14px}
+    .race-status-chip{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:20px;text-align:center;white-space:nowrap}
+    .race-status-chip.done{color:var(--muted);border:1px solid var(--border)}
+    .race-status-chip.next{color:var(--red);border:1px solid var(--red);background:rgba(232,0,45,.08)}
+    .race-status-chip.upcoming{color:var(--muted);border:1px solid var(--border2)}
+    .sprint-tag{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.35);padding:1px 5px;border-radius:2px;margin-left:6px}
+
+    /* ── RESULTS ── */
+    .results-header-bar{background:var(--surface);border:1px solid var(--border);padding:22px;margin-bottom:2px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+    .results-race-name{font-family:var(--display);font-size:34px;letter-spacing:.06em}
+    .results-meta{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--muted)}
+    .results-winner-chip{margin-left:auto;background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.3);padding:10px 16px;border-radius:3px}
+    .results-winner-chip span{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:3px}
+    .results-winner-chip strong{font-family:var(--cond);font-weight:800;font-size:17px;letter-spacing:.04em;color:var(--gold)}
+    .podium-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:2px}
+    .podium-card{background:var(--card);border:1px solid var(--border);padding:22px;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;overflow:hidden}
+    .podium-card.p1{border-color:rgba(201,168,76,.5)}.podium-card.p2{border-color:rgba(168,184,200,.35)}.podium-card.p3{border-color:rgba(205,127,50,.35)}
+    .podium-pos-bg{font-family:var(--display);font-size:76px;line-height:1;opacity:.08;position:absolute;right:6px;bottom:-2px}
+    .p1 .podium-pos-bg{color:var(--gold)}.p2 .podium-pos-bg{color:var(--silver)}.p3 .podium-pos-bg{color:#CD7F32}
+    .podium-medal{font-size:26px;margin-bottom:10px}
+    .podium-driver-name{font-family:var(--cond);font-weight:800;font-size:19px;letter-spacing:.04em}
+    .podium-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:3px 0 7px}
+    .podium-gap{font-family:var(--mono);font-size:11px;color:var(--silver)}
+    .race-table{width:100%;border-collapse:collapse;background:var(--card)}
+    .race-table th{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border2);background:var(--surface)}
+    .race-table td{padding:9px 13px;border-bottom:1px solid var(--border);font-size:12px}
+    .race-table tbody tr:hover{background:rgba(255,255,255,.018)}
+    .race-table tbody tr:last-child td{border-bottom:none}
+    .pos-cell{font-family:var(--display);font-size:19px;color:var(--muted);width:40px}
+    .pos-cell.top3{color:var(--text)}
+    .driver-name-cell{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em}
+    .team-cell{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .gap-cell{font-family:var(--mono);font-size:10px;color:var(--silver)}
+    .dnf-cell{font-family:var(--mono);font-size:9px;color:var(--red)}
+    .points-cell{font-family:var(--display);font-size:17px;color:var(--gold)}
+    .fl-badge{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--red);border:1px solid var(--red);padding:1px 4px;border-radius:2px;margin-left:4px}
+    .grid-pos{font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+    /* ── STANDINGS ── */
+    .standing-table{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px}
+    .standing-section{background:var(--card);border:1px solid var(--border)}
+    .standing-section h3{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:13px 18px;border-bottom:1px solid var(--border);color:var(--muted)}
+    .standing-row{display:flex;align-items:center;padding:9px 18px;gap:10px;border-bottom:1px solid var(--border);transition:background .15s}
+    .standing-row:last-child{border-bottom:none}
+    .standing-row:hover{background:rgba(255,255,255,.018)}
+    .s-rank{font-family:var(--display);font-size:19px;color:var(--muted);width:26px;flex-shrink:0}
+    .s-rank.r1{color:var(--gold)}.s-rank.r2{color:var(--silver)}.s-rank.r3{color:#CD7F32}
+    .s-name{flex:1;font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em}
+    .s-team{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .s-pts{font-family:var(--display);font-size:22px;color:var(--gold)}
+    .team-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+    /* ── LOADING ── */
+    .loader-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;gap:14px}
+    .loader-ring{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader-text{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+    /* ── FOOTER ── */
+    footer{border-top:1px solid var(--border);padding:22px 28px;display:flex;justify-content:space-between;align-items:center;max-width:1380px;margin:0 auto}
+    .footer-logo{font-family:var(--display);font-size:18px;letter-spacing:.1em;color:var(--muted)}
+    .footer-logo em{font-style:normal;color:var(--red)}
+    .footer-copy{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){
+      .charts-dashboard,.charts-dashboard-3{grid-template-columns:1fr}
+      .chart-card.wide{grid-column:span 1}
+      .compare-selects{grid-template-columns:1fr}
+      .compare-vs{display:none}
+      .compare-result,.standing-table,.podium-row{grid-template-columns:1fr}
+    }
+    @media(max-width:680px){
+      nav{padding:0 14px}.nav-links{display:none}
+      main{padding:0 14px 48px}.hero{padding:44px 14px 36px}
+      .driver-grid{grid-template-columns:repeat(2,1fr)}
+      .team-grid,.cars-grid{grid-template-columns:1fr}
+      .race-row{grid-template-columns:38px 1fr 70px}
+      .race-date-col{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><em>▲</em>APEX<div class="nav-badge">Analytics</div></div>
+  <div class="nav-links">
+    <a href="#analytics">Analytics</a>
+    <a href="#drivers">Drivers</a>
+    <a href="#compare">Compare</a>
+    <a href="#teams">Teams</a>
+    <a href="#cars">Cars</a>
+    <a href="#calendar">Calendar</a>
+    <a href="#results">Results</a>
+  </div>
+  <div class="season-pill">2026 SEASON</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Formula 1 · 2026 Season Analytics</div>
+  <h1>THE <em>APEX</em></h1>
+  <p class="hero-sub">Interactive standings, performance analytics, and race data for the 2026 Formula 1 World Championship.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-n" id="statDrivers">—</div><div class="hero-stat-l">Drivers</div></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><div class="hero-stat-n" id="statTeams">—</div><div class="hero-stat-l">Teams</div></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><div class="hero-stat-n" id="statRaces">—</div><div class="hero-stat-l">Rounds</div></div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat"><div class="hero-stat-n" id="statLeader">—</div><div class="hero-stat-l">Championship Leader</div></div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker-label">Live Standings</div>
+  <div style="overflow:hidden;flex:1"><div class="ticker-track" id="tickerTrack"></div></div>
+</div>
+
+<main>
+
+  <!-- ── ANALYTICS ── -->
+  <section id="analytics">
+    <div class="section-header">
+      <div class="section-title">ANALYTICS</div>
+      <div class="section-count">Charts &amp; Visualizations</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-dashboard">
+      <div class="chart-card">
+        <div class="chart-title">Driver Points</div>
+        <div class="chart-sub">Championship standings after R1</div>
+        <div class="chart-wrap tall"><canvas id="chartDriverPts"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Constructor Standings</div>
+        <div class="chart-sub">Team points after R1</div>
+        <div class="chart-wrap tall"><canvas id="chartConstructors"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-dashboard">
+      <div class="chart-card wide">
+        <div class="chart-title">Car Performance Comparison</div>
+        <div class="chart-sub">All 11 cars — key performance metrics</div>
+        <div class="filter-bar" id="carMetricFilter"></div>
+        <div class="chart-wrap"><canvas id="chartCarPerf"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-dashboard-3" id="radarSection">
+      <!-- Radar charts inserted here -->
+    </div>
+  </section>
+
+  <!-- ── DRIVERS ── -->
+  <section id="drivers">
+    <div class="section-header">
+      <div class="section-title">DRIVERS</div>
+      <div class="section-count" id="driverCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="filter-bar" id="driverFilters"></div>
+    <div class="driver-grid" id="driverGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading drivers</div></div>
+    </div>
+  </section>
+
+  <!-- ── COMPARE ── -->
+  <section id="compare">
+    <div class="section-header">
+      <div class="section-title">COMPARE</div>
+      <div class="section-count">Head-to-Head Driver Analysis</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="compare-wrap">
+      <div class="compare-selects">
+        <select class="compare-select" id="cmpA" onchange="runCompare()"></select>
+        <div class="compare-vs">VS</div>
+        <select class="compare-select" id="cmpB" onchange="runCompare()"></select>
+      </div>
+      <div id="compareResult"></div>
+      <div class="compare-chart-wrap">
+        <div class="chart-title">DNA Radar Comparison</div>
+        <div class="chart-sub">Driver ratings across key performance dimensions</div>
+        <div class="chart-wrap" style="max-width:480px;margin:0 auto"><canvas id="chartRadarCompare"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TEAMS ── -->
+  <section id="teams">
+    <div class="section-header">
+      <div class="section-title">TEAMS</div>
+      <div class="section-count" id="teamCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="team-grid" id="teamGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading teams</div></div>
+    </div>
+  </section>
+
+  <!-- ── CARS ── -->
+  <section id="cars">
+    <div class="section-header">
+      <div class="section-title">CARS</div>
+      <div class="section-count" id="carCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="cars-grid" id="carGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading cars</div></div>
+    </div>
+  </section>
+
+  <!-- ── CALENDAR ── -->
+  <section id="calendar">
+    <div class="section-header">
+      <div class="section-title">CALENDAR</div>
+      <div class="section-count" id="raceCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showCalTab('all',this)">All Rounds</button>
+      <button class="tab-btn" onclick="showCalTab('completed',this)">Completed</button>
+      <button class="tab-btn" onclick="showCalTab('upcoming',this)">Upcoming</button>
+      <button class="tab-btn" onclick="showCalTab('sprint',this)">Sprint Weekends</button>
+    </div>
+    <div class="calendar-list" id="calendarList">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading calendar</div></div>
+    </div>
+  </section>
+
+  <!-- ── RESULTS ── -->
+  <section id="results">
+    <div class="section-header">
+      <div class="section-title">RESULTS</div>
+      <div class="section-count">R1 — Australian Grand Prix 2026</div>
+      <div class="section-line"></div>
+    </div>
+    <div id="resultsContent">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading results</div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo"><em>▲</em> APEX</div>
+  <div class="footer-copy">F1 2026 Season Analytics · Local JSON Data</div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   APEX F1 2026 — app.js  (Enhanced with Chart.js analytics)
+   ═══════════════════════════════════════════════════════════════ */
+
+// ── Team colour palette ──────────────────────────────────────────
+const TEAM_COLORS = {
+  mercedes:    '#00D2BE',
+  ferrari:     '#E8002D',
+  mclaren:     '#FF8000',
+  redbull:     '#3671C6',
+  astonmartin: '#229971',
+  williams:    '#037AFF',
+  racingbulls: '#6692FF',
+  haas:        '#B6BABD',
+  audi:        '#C00000',
+  alpine:      '#0090FF',
+  cadillac:    '#C8A217',
+};
+const tc = id => TEAM_COLORS[id] || '#E8002D';
+
+// ── Chart.js global defaults ────────────────────────────────────
+Chart.defaults.color = '#4A5568';
+Chart.defaults.borderColor = '#1A2030';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size   = 10;
+
+// ── Global state ─────────────────────────────────────────────────
+const DB = { drivers: [], teams: [], cars: [], races: [], results: null };
+let calFilter    = 'all';
+let driverFilter = 'all';
+let carMetric    = 'topSpeed';
+const CHARTS     = {};
+
+// ── Fetch ────────────────────────────────────────────────────────
+async function fetchJSON(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(`Cannot load ${path} (${r.status})`);
+  return r.json();
+}
+
+// ── Bootstrap ────────────────────────────────────────────────────
+async function init() {
+  try {
+    const dData   = {
+  "season": 2026,
+  "drivers": [
+    {
+      "id": "russell",
+      "firstName": "George",
+      "lastName": "Russell",
+      "number": 63,
+      "flag": "🇬🇧",
+      "nationality": "British",
+      "team": "mercedes",
+      "age": 28,
+      "dateOfBirth": "1998-02-15",
+      "placeOfBirth": "King's Lynn, England",
+      "biography": "The reigning 2026 season leader after a dominant victory at Albert Park. Russell claimed pole and led a Mercedes 1-2 in the season opener, confirming the W17 as the class of the field. A methodical, intelligent racer who maximises every opportunity, Russell is the man to beat in 2026.",
+      "careerStats": {
+        "wins": 6,
+        "poles": 4,
+        "worldTitles": 0,
+        "racesEntered": 121,
+        "podiums": 18,
+        "fastestLaps": 7,
+        "pointsScored": 910
+      },
+      "season2026": {
+        "points": 25,
+        "championshipPosition": 1,
+        "wins": 1,
+        "podiums": 1,
+        "poles": 1
+      },
+      "ratings": {
+        "qualifying": 93,
+        "racePace": 91,
+        "tyreManagement": 89,
+        "wetWeather": 87,
+        "consistency": 92,
+        "aggression": 85
+      },
+      "strengths": [
+        "Technical feedback and car setup — engineers love working with him",
+        "Tyre management on long stints in race trim",
+        "Consistent qualifying pace across different conditions",
+        "Strategic racecraft — excellent at reading the race"
+      ],
+      "weaknesses": [
+        "Wheel-to-wheel combat at high speed can be cautious",
+        "Yet to win a World Championship despite strong machinery"
+      ]
+    },
+    {
+      "id": "antonelli",
+      "firstName": "Andrea Kimi",
+      "lastName": "Antonelli",
+      "number": 12,
+      "flag": "🇮🇹",
+      "nationality": "Italian",
+      "team": "mercedes",
+      "age": 18,
+      "dateOfBirth": "2006-08-25",
+      "placeOfBirth": "Bologna, Italy",
+      "biography": "The youngest driver on the 2026 grid, Antonelli stepped into Lewis Hamilton's seat at Mercedes and immediately delivered. Fastest in pre-season testing at Bahrain, he recovered from a heavy FP3 crash in Australia to claim P2 in the race — a stunning debut for the Italian prodigy.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 17,
+        "podiums": 1,
+        "fastestLaps": 0,
+        "pointsScored": 28
+      },
+      "season2026": {
+        "points": 18,
+        "championshipPosition": 2,
+        "wins": 0,
+        "podiums": 1,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 88,
+        "racePace": 87,
+        "tyreManagement": 82,
+        "wetWeather": 80,
+        "consistency": 81,
+        "aggression": 89
+      },
+      "strengths": [
+        "Raw one-lap speed — fastest in Bahrain pre-season testing",
+        "Aggressive racecraft and brave overtaking moves",
+        "Exceptional junior career results across all categories",
+        "Thrives under pressure — recovered beautifully from FP3 crash in Australia"
+      ],
+      "weaknesses": [
+        "Limited Formula 1 experience — only second season",
+        "Managing tyre degradation over a full race distance",
+        "Consistency under pressure in championship situations"
+      ]
+    },
+    {
+      "id": "leclerc",
+      "firstName": "Charles",
+      "lastName": "Leclerc",
+      "number": 16,
+      "flag": "🇲🇨",
+      "nationality": "Monégasque",
+      "team": "ferrari",
+      "age": 28,
+      "dateOfBirth": "1997-10-16",
+      "placeOfBirth": "Monte Carlo, Monaco",
+      "biography": "Ferrari's lead driver and one of the fastest qualifiers in the sport. Leclerc led the opening laps of the 2026 season in Australia with a brilliant start, but Ferrari's strategy call not to pit under the VSC cost him a potential win. Third place confirmed his pace, and he will be a major title contender all season.",
+      "careerStats": {
+        "wins": 13,
+        "poles": 28,
+        "worldTitles": 0,
+        "racesEntered": 152,
+        "podiums": 51,
+        "fastestLaps": 9,
+        "pointsScored": 1523
+      },
+      "season2026": {
+        "points": 15,
+        "championshipPosition": 3,
+        "wins": 0,
+        "podiums": 1,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 97,
+        "racePace": 93,
+        "tyreManagement": 83,
+        "wetWeather": 88,
+        "consistency": 87,
+        "aggression": 90
+      },
+      "strengths": [
+        "Single-lap qualifying pace — one of the best in the sport",
+        "Sensational at street circuits and high-downforce tracks",
+        "Brave commitment under braking — very hard to overtake",
+        "Natural feel for the limit of the car"
+      ],
+      "weaknesses": [
+        "Race strategy and tyre management under pressure",
+        "Costly errors at critical moments have hurt title bids",
+        "Communication with Ferrari strategy team during races"
+      ]
+    },
+    {
+      "id": "hamilton",
+      "firstName": "Lewis",
+      "lastName": "Hamilton",
+      "number": 44,
+      "flag": "🇬🇧",
+      "nationality": "British",
+      "team": "ferrari",
+      "age": 41,
+      "dateOfBirth": "1985-01-07",
+      "placeOfBirth": "Stevenage, England",
+      "biography": "The most decorated driver in Formula 1 history makes his dream move to Ferrari. Seven World Championships, 103 victories, 104 pole positions. Fourth in Australia, Hamilton was fastest in pre-season testing at Barcelona and is determined to secure an eighth title before his career ends.",
+      "careerStats": {
+        "wins": 103,
+        "poles": 104,
+        "worldTitles": 7,
+        "racesEntered": 349,
+        "podiums": 197,
+        "fastestLaps": 67,
+        "pointsScored": 4765.5
+      },
+      "season2026": {
+        "points": 12,
+        "championshipPosition": 4,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 96,
+        "racePace": 94,
+        "tyreManagement": 92,
+        "wetWeather": 98,
+        "consistency": 93,
+        "aggression": 91
+      },
+      "strengths": [
+        "Wet weather mastery — widely considered supernatural",
+        "Qualifying single-lap pace at the absolute limit",
+        "Tyre management and long-run race intelligence",
+        "Adapts to any car philosophy through exceptional feel"
+      ],
+      "weaknesses": [
+        "Ongoing adaptation period adjusting to Ferrari philosophy",
+        "Age and energy management over a full season"
+      ]
+    },
+    {
+      "id": "norris",
+      "firstName": "Lando",
+      "lastName": "Norris",
+      "number": 1,
+      "flag": "🇬🇧",
+      "nationality": "British",
+      "team": "mclaren",
+      "age": 25,
+      "dateOfBirth": "1999-11-13",
+      "placeOfBirth": "Bristol, England",
+      "biography": "The reigning 2025 World Drivers' Champion. Norris takes number 1 on his MCL40 in 2026, defending his title against a resurgent Mercedes and Ferrari. Fifth in Australia after qualifying sixth, Norris held off Verstappen's charging Red Bull in an intense late-race duel.",
+      "careerStats": {
+        "wins": 19,
+        "poles": 12,
+        "worldTitles": 1,
+        "racesEntered": 133,
+        "podiums": 46,
+        "fastestLaps": 14,
+        "pointsScored": 1402
+      },
+      "season2026": {
+        "points": 10,
+        "championshipPosition": 5,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 94,
+        "racePace": 93,
+        "tyreManagement": 88,
+        "wetWeather": 90,
+        "consistency": 91,
+        "aggression": 92
+      },
+      "strengths": [
+        "Pure one-lap speed — elite qualifying performer",
+        "Aggressive racecraft and brave wheel-to-wheel battles",
+        "Tyre management improved dramatically since 2024 title campaign",
+        "Composure in championship-defining moments"
+      ],
+      "weaknesses": [
+        "MCL40 appears a step behind Mercedes and Ferrari in 2026",
+        "Energy deployment issues noted in qualifying in Australia"
+      ]
+    },
+    {
+      "id": "piastri",
+      "firstName": "Oscar",
+      "lastName": "Piastri",
+      "number": 81,
+      "flag": "🇦🇺",
+      "nationality": "Australian",
+      "team": "mclaren",
+      "age": 24,
+      "dateOfBirth": "2001-04-06",
+      "placeOfBirth": "Melbourne, Australia",
+      "biography": "The local hero suffered heartbreak at the 2026 Australian GP — crashing heavily on his reconnaissance lap and missing his home race entirely. Seven wins in 2025, Piastri is a proven front-runner with the racecraft to challenge for the championship once reliability holds.",
+      "careerStats": {
+        "wins": 10,
+        "poles": 5,
+        "worldTitles": 0,
+        "racesEntered": 62,
+        "podiums": 24,
+        "fastestLaps": 8,
+        "pointsScored": 640
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 91,
+        "racePace": 93,
+        "tyreManagement": 90,
+        "wetWeather": 86,
+        "consistency": 90,
+        "aggression": 87
+      },
+      "strengths": [
+        "Smooth, precise racecraft that is gentle on tyres",
+        "Brilliant ability to manage gaps and control races from the front",
+        "Mentally composed even in chaotic conditions",
+        "Rapid development — improving every single season"
+      ],
+      "weaknesses": [
+        "DNS in Australia — points deficit will take time to overcome",
+        "Less aggressive in wheel-to-wheel fights compared to Norris"
+      ]
+    },
+    {
+      "id": "verstappen",
+      "firstName": "Max",
+      "lastName": "Verstappen",
+      "number": 3,
+      "flag": "🇳🇱",
+      "nationality": "Dutch",
+      "team": "redbull",
+      "age": 28,
+      "dateOfBirth": "1997-09-30",
+      "placeOfBirth": "Hasselt, Belgium",
+      "biography": "Four-time World Champion adapts to a new RB22 with Red Bull Powertrains-Ford power. A difficult start in Australia — crashing out in Q1 on his first push lap and starting 20th — but an incredible recovery to sixth showed his championship quality. The RB22 needs development to close the gap to Mercedes.",
+      "careerStats": {
+        "wins": 63,
+        "poles": 40,
+        "worldTitles": 4,
+        "racesEntered": 194,
+        "podiums": 112,
+        "fastestLaps": 32,
+        "pointsScored": 2987
+      },
+      "season2026": {
+        "points": 8,
+        "championshipPosition": 6,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 97,
+        "racePace": 98,
+        "tyreManagement": 94,
+        "wetWeather": 92,
+        "consistency": 95,
+        "aggression": 97
+      },
+      "strengths": [
+        "Raw race pace — best in modern era in race conditions",
+        "Tyre management under pressure and strategic flexibility",
+        "Aggressive defending and relentless overtaking",
+        "Never gives up — recovery from 20th to 6th in Australia proved that"
+      ],
+      "weaknesses": [
+        "RB22 not yet at the level of Mercedes in 2026 regulations",
+        "New partnership with Ford powertrain needs bedding in"
+      ]
+    },
+    {
+      "id": "hadjar",
+      "firstName": "Isack",
+      "lastName": "Hadjar",
+      "number": 6,
+      "flag": "🇫🇷",
+      "nationality": "French",
+      "team": "redbull",
+      "age": 20,
+      "dateOfBirth": "2004-09-28",
+      "placeOfBirth": "Paris, France",
+      "biography": "The French-Algerian rookie made an instant impression in his first race for Red Bull, qualifying P3 in Australia and running brilliantly in fourth before a cruel engine failure on lap 11. Already seen as a future champion by Red Bull, Hadjar has the raw pace to run at the very front.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 19,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 2
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 87,
+        "racePace": 86,
+        "tyreManagement": 80,
+        "wetWeather": 78,
+        "consistency": 79,
+        "aggression": 86
+      },
+      "strengths": [
+        "Outstanding qualifying pace — P3 in debut weekend at Australia",
+        "Brave commitment into corners — no fear of the car",
+        "Strong junior record — F2 champion before F1 debut",
+        "Red Bull junior system graduate — exceptional preparation"
+      ],
+      "weaknesses": [
+        "Limited F1 experience — DNF in debut race in Australia",
+        "Long-race tyre management and energy deployment still developing"
+      ]
+    },
+    {
+      "id": "alonso",
+      "firstName": "Fernando",
+      "lastName": "Alonso",
+      "number": 14,
+      "flag": "🇪🇸",
+      "nationality": "Spanish",
+      "team": "astonmartin",
+      "age": 44,
+      "dateOfBirth": "1981-07-29",
+      "placeOfBirth": "Oviedo, Spain",
+      "biography": "The Maestro continues into his 24th F1 season at 44 years old. Aston Martin's switch to Honda power is seen as a chance for Alonso to fight for wins again. A disastrous Australia weekend saw his car DNF alongside Stroll, but Alonso's talent remains undimmed — he will be looking to bounce back strongly.",
+      "careerStats": {
+        "wins": 32,
+        "poles": 22,
+        "worldTitles": 2,
+        "racesEntered": 400,
+        "podiums": 106,
+        "fastestLaps": 23,
+        "pointsScored": 2267
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 90,
+        "racePace": 92,
+        "tyreManagement": 95,
+        "wetWeather": 94,
+        "consistency": 90,
+        "aggression": 96
+      },
+      "strengths": [
+        "Racecraft and experience — 400+ race starts",
+        "Tyre management genius — legendary for making tyres last",
+        "Strategic awareness and adaptability mid-race",
+        "Relentless motivation — still pushing at 44 years old"
+      ],
+      "weaknesses": [
+        "Aston Martin Honda new package still needs development",
+        "DNF in Australia — reliability concerns at race start"
+      ]
+    },
+    {
+      "id": "stroll",
+      "firstName": "Lance",
+      "lastName": "Stroll",
+      "number": 18,
+      "flag": "🇨🇦",
+      "nationality": "Canadian",
+      "team": "astonmartin",
+      "age": 27,
+      "dateOfBirth": "1998-10-29",
+      "placeOfBirth": "Montreal, Canada",
+      "biography": "Son of team owner Lawrence Stroll, Lance continues as Alonso's team-mate at Aston Martin in 2026. The team's switch to Honda power is a new opportunity. A DNF in Australia with suspected nerve damage to the car's systems was a disappointing start, but he will be pushing hard through the season.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 3,
+        "worldTitles": 0,
+        "racesEntered": 176,
+        "podiums": 3,
+        "fastestLaps": 1,
+        "pointsScored": 266
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 80,
+        "racePace": 81,
+        "tyreManagement": 82,
+        "wetWeather": 83,
+        "consistency": 78,
+        "aggression": 80
+      },
+      "strengths": [
+        "Strong in wet conditions — historically one of his best traits",
+        "Good feel for street circuits and Monaco-style layouts",
+        "Improved confidence in wheel-to-wheel battles",
+        "Backed by a well-funded team with full manufacturer support"
+      ],
+      "weaknesses": [
+        "Qualifying pace consistently below Alonso",
+        "DNF in Australia — yet to score in 2026"
+      ]
+    },
+    {
+      "id": "albon",
+      "firstName": "Alex",
+      "lastName": "Albon",
+      "number": 23,
+      "flag": "🇹🇭",
+      "nationality": "Thai",
+      "team": "williams",
+      "age": 28,
+      "dateOfBirth": "1996-03-23",
+      "placeOfBirth": "London, England",
+      "biography": "Williams' lead driver and one of the most underrated talents on the grid. Albon finished 12th in Australia, a solid if unspectacular start in a Williams car that is expected to be more competitive in 2026 with Mercedes power. A fan favourite known for his measured racecraft.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 95,
+        "podiums": 2,
+        "fastestLaps": 2,
+        "pointsScored": 355
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 12,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 84,
+        "racePace": 85,
+        "tyreManagement": 86,
+        "wetWeather": 82,
+        "consistency": 85,
+        "aggression": 81
+      },
+      "strengths": [
+        "Exceptional racecraft — extracts maximum from limited machinery",
+        "Excellent tyre management and long-run consistency",
+        "Highly rated by engineers for technical development feedback",
+        "Cool under pressure — rarely makes costly errors"
+      ],
+      "weaknesses": [
+        "Williams still unlikely to challenge top teams for wins",
+        "Qualifying pace sometimes lacks that extra tenth"
+      ]
+    },
+    {
+      "id": "sainz",
+      "firstName": "Carlos",
+      "lastName": "Sainz",
+      "number": 55,
+      "flag": "🇪🇸",
+      "nationality": "Spanish",
+      "team": "williams",
+      "age": 31,
+      "dateOfBirth": "1994-09-01",
+      "placeOfBirth": "Madrid, Spain",
+      "biography": "Moved from Ferrari to Williams for 2026 after Hamilton's arrival. Failed to set a qualifying time in Australia with a technical issue and was permitted to race at stewards' discretion. Sainz is determined to prove his worth outside of a top team and has the ability to drag Williams into the points regularly.",
+      "careerStats": {
+        "wins": 4,
+        "poles": 6,
+        "worldTitles": 0,
+        "racesEntered": 200,
+        "podiums": 23,
+        "fastestLaps": 4,
+        "pointsScored": 1115
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 15,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 91,
+        "racePace": 89,
+        "tyreManagement": 90,
+        "wetWeather": 87,
+        "consistency": 91,
+        "aggression": 88
+      },
+      "strengths": [
+        "Consistently fast in qualifying and race conditions",
+        "Excellent tyre management and strategic awareness",
+        "Ability to lead a team — strong technical leader",
+        "Renowned for outstanding performances in wet conditions"
+      ],
+      "weaknesses": [
+        "Williams car a significant step down from his Ferrari days",
+        "Technical failure in Australia qualifying cost him points"
+      ]
+    },
+    {
+      "id": "lawson",
+      "firstName": "Liam",
+      "lastName": "Lawson",
+      "number": 30,
+      "flag": "🇳🇿",
+      "nationality": "New Zealander",
+      "team": "racingbulls",
+      "age": 22,
+      "dateOfBirth": "2002-02-11",
+      "placeOfBirth": "Hastings, New Zealand",
+      "biography": "Promoted to Racing Bulls full-time for 2026 after impressing in his appearances in 2024. Lawson qualified 8th in Australia and finished 13th — a solid debut showing in a new season. The New Zealander is expected to be a regular points scorer as the VCARB03 develops.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 24,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 18
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 13,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 83,
+        "racePace": 82,
+        "tyreManagement": 80,
+        "wetWeather": 79,
+        "consistency": 80,
+        "aggression": 83
+      },
+      "strengths": [
+        "Aggressive racecraft — goes for gaps others leave",
+        "Strong in wheel-to-wheel battles",
+        "Rapid improvement curve since junior career",
+        "Made Q3 on debut weekend at Australia"
+      ],
+      "weaknesses": [
+        "Limited F1 race experience compared to midfield rivals",
+        "Tyre and energy management still developing"
+      ]
+    },
+    {
+      "id": "lindblad",
+      "firstName": "Arvid",
+      "lastName": "Lindblad",
+      "number": 41,
+      "flag": "🇬🇧",
+      "nationality": "British-Swedish",
+      "team": "racingbulls",
+      "age": 18,
+      "dateOfBirth": "2007-04-13",
+      "placeOfBirth": "Newark, England",
+      "biography": "The only true rookie on the 2026 grid, Lindblad secured number 41 and made an immediate impression. Qualified P9 in Australia and scored points on debut with P8 — only the third rookie in history to finish in the top 10 on their debut at Australia. An exceptional talent watched closely by Red Bull.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 1,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 4
+      },
+      "season2026": {
+        "points": 4,
+        "championshipPosition": 8,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 83,
+        "racePace": 80,
+        "tyreManagement": 76,
+        "wetWeather": 74,
+        "consistency": 77,
+        "aggression": 82
+      },
+      "strengths": [
+        "Exceptional junior career — dominant in F2",
+        "Fearless racecraft — P9 in qualifying on debut",
+        "Strong racing instincts from years of karting and junior series",
+        "Points on debut — only the 3rd rookie to do it in Australia"
+      ],
+      "weaknesses": [
+        "No prior Formula 1 race experience before 2026",
+        "Managing energy systems and tyres across a full season"
+      ]
+    },
+    {
+      "id": "ocon",
+      "firstName": "Esteban",
+      "lastName": "Ocon",
+      "number": 31,
+      "flag": "🇫🇷",
+      "nationality": "French",
+      "team": "haas",
+      "age": 29,
+      "dateOfBirth": "1996-09-17",
+      "placeOfBirth": "Évreux, France",
+      "biography": "Joined Haas for 2026 after leaving Alpine, where he raced since 2020. Ocon finished 11th in Australia — just outside the points — but the VF-26 showed genuine promise and the French driver will be eyeing regular top-ten finishes with the Ferrari-powered Haas.",
+      "careerStats": {
+        "wins": 1,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 135,
+        "podiums": 3,
+        "fastestLaps": 1,
+        "pointsScored": 389
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 11,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 85,
+        "racePace": 84,
+        "tyreManagement": 84,
+        "wetWeather": 83,
+        "consistency": 84,
+        "aggression": 84
+      },
+      "strengths": [
+        "Consistent and rarely makes costly errors",
+        "Excellent race pace — extracts the maximum from midfield machinery",
+        "Tyre management and long-run degradation control",
+        "Experience racing for multiple teams — adapts quickly"
+      ],
+      "weaknesses": [
+        "P11 in Australia — just missed the points in 2026 opener",
+        "Tends to struggle when demoralised by circumstances"
+      ]
+    },
+    {
+      "id": "bearman",
+      "firstName": "Oliver",
+      "lastName": "Bearman",
+      "number": 87,
+      "flag": "🇬🇧",
+      "nationality": "British",
+      "team": "haas",
+      "age": 19,
+      "dateOfBirth": "2005-05-08",
+      "placeOfBirth": "Chelmsford, England",
+      "biography": "One of the most exciting young British drivers in years, Bearman graduated to a full Haas seat for 2026 after his sensational stand-in drives in 2024 and 2025. P7 in Australia on debut — his best ever F1 result — with the Toyota-backed VF-26, confirming his huge potential.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 15,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 18
+      },
+      "season2026": {
+        "points": 6,
+        "championshipPosition": 7,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 84,
+        "racePace": 83,
+        "tyreManagement": 78,
+        "wetWeather": 80,
+        "consistency": 80,
+        "aggression": 87
+      },
+      "strengths": [
+        "Proven under pressure — won races as a Ferrari junior",
+        "Aggressive racecraft that has impressed experienced engineers",
+        "P7 on debut in first full season — enormous natural pace",
+        "Supported by Ferrari junior development programme experience"
+      ],
+      "weaknesses": [
+        "Limited full F1 season experience — still learning the grid",
+        "Tyre management and energy deployment with new 2026 regulations"
+      ]
+    },
+    {
+      "id": "hulkenberg",
+      "firstName": "Nico",
+      "lastName": "Hülkenberg",
+      "number": 27,
+      "flag": "🇩🇪",
+      "nationality": "German",
+      "team": "audi",
+      "age": 38,
+      "dateOfBirth": "1987-08-19",
+      "placeOfBirth": "Emmerich am Rhein, Germany",
+      "biography": "The experienced German joins Audi for their historic F1 debut season after strong years at Haas. DNS in Australia due to a technical issue before the race, but Hülkenberg is well placed to guide Audi's learning process with his vast experience. Expects mid-season before the R26 is truly competitive.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 1,
+        "worldTitles": 0,
+        "racesEntered": 227,
+        "podiums": 0,
+        "fastestLaps": 2,
+        "pointsScored": 537
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 87,
+        "racePace": 86,
+        "tyreManagement": 87,
+        "wetWeather": 85,
+        "consistency": 88,
+        "aggression": 83
+      },
+      "strengths": [
+        "Vast experience — invaluable for a manufacturer debut year",
+        "Excellent technical feedback for car development",
+        "One-lap qualifying pace remains strong",
+        "Rarely makes costly mistakes under pressure"
+      ],
+      "weaknesses": [
+        "DNS in Australia — Audi reliability concerns at race start",
+        "R26 expected to need significant development to reach midfield pace"
+      ]
+    },
+    {
+      "id": "bortoleto",
+      "firstName": "Gabriel",
+      "lastName": "Bortoleto",
+      "number": 5,
+      "flag": "🇧🇷",
+      "nationality": "Brazilian",
+      "team": "audi",
+      "age": 20,
+      "dateOfBirth": "2004-10-14",
+      "placeOfBirth": "São Paulo, Brazil",
+      "biography": "The 2024 F2 champion joins Audi for their debut season. Made it to Q3 on pace in Australia before a technical failure stopped him. Raced brilliantly to P9 — Audi's first ever points finish. A fast, smooth driver tipped for a long career at the front of F1.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 20,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 26
+      },
+      "season2026": {
+        "points": 2,
+        "championshipPosition": 9,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 85,
+        "racePace": 84,
+        "tyreManagement": 81,
+        "wetWeather": 79,
+        "consistency": 82,
+        "aggression": 85
+      },
+      "strengths": [
+        "Exceptional junior pedigree — 2024 F2 champion",
+        "Smooth driving style that is kind on tyres",
+        "P9 in Australia — Audi's first points in debut season",
+        "Mentored by Max Verstappen — top-level guidance"
+      ],
+      "weaknesses": [
+        "Technical failure in Q3 Australia — lost front row potential",
+        "Audi R26 still needs significant development"
+      ]
+    },
+    {
+      "id": "gasly",
+      "firstName": "Pierre",
+      "lastName": "Gasly",
+      "number": 10,
+      "flag": "🇫🇷",
+      "nationality": "French",
+      "team": "alpine",
+      "age": 30,
+      "dateOfBirth": "1996-02-07",
+      "placeOfBirth": "Rouen, France",
+      "biography": "Alpine's experienced lead driver in their new Mercedes-powered era. Gasly secured the final point in Australia with P10, a solid result that shows Alpine can still compete in the points despite the transition from Renault to Mercedes power. His experience is key to developing the A526.",
+      "careerStats": {
+        "wins": 1,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 139,
+        "podiums": 4,
+        "fastestLaps": 3,
+        "pointsScored": 421
+      },
+      "season2026": {
+        "points": 1,
+        "championshipPosition": 10,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 86,
+        "racePace": 85,
+        "tyreManagement": 84,
+        "wetWeather": 83,
+        "consistency": 85,
+        "aggression": 84
+      },
+      "strengths": [
+        "Experience and racecraft — one of the grid's proven performers",
+        "Strong in race trim — regularly outperforms qualifying position",
+        "Excellent tyre management and strategic awareness",
+        "Key technical leader for Alpine's Mercedes engine transition"
+      ],
+      "weaknesses": [
+        "Alpine still a developing team with new power unit",
+        "Qualifying pace below the very top tier of drivers"
+      ]
+    },
+    {
+      "id": "colapinto",
+      "firstName": "Franco",
+      "lastName": "Colapinto",
+      "number": 43,
+      "flag": "🇦🇷",
+      "nationality": "Argentine",
+      "team": "alpine",
+      "age": 21,
+      "dateOfBirth": "2003-07-27",
+      "placeOfBirth": "Buenos Aires, Argentina",
+      "biography": "The popular Argentine joins Alpine full-time for 2026 after impressive part-season outings. Finished 14th in Australia after a stop-go penalty for a starting procedure infringement, but his speed and commitment will keep him in the points regularly as the A526 develops.",
+      "careerStats": {
+        "wins": 0,
+        "poles": 0,
+        "worldTitles": 0,
+        "racesEntered": 26,
+        "podiums": 0,
+        "fastestLaps": 0,
+        "pointsScored": 22
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 14,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 83,
+        "racePace": 82,
+        "tyreManagement": 79,
+        "wetWeather": 80,
+        "consistency": 79,
+        "aggression": 86
+      },
+      "strengths": [
+        "Fearless racecraft — brave at overtaking",
+        "Strong fan following that galvanises team spirit",
+        "Impressive qualifying pace given limited experience",
+        "Adapts quickly to new cars and environments"
+      ],
+      "weaknesses": [
+        "Stop-go penalty in Australia shows need for discipline",
+        "Race-craft consistency still developing"
+      ]
+    },
+    {
+      "id": "perez",
+      "firstName": "Sergio",
+      "lastName": "Perez",
+      "number": 11,
+      "flag": "🇲🇽",
+      "nationality": "Mexican",
+      "team": "cadillac",
+      "age": 36,
+      "dateOfBirth": "1990-01-26",
+      "placeOfBirth": "Guadalajara, Mexico",
+      "biography": "Returns to the grid with debutant team Cadillac after his Red Bull contract was terminated at end of 2024. Knocked out in Q1 in Australia and finished P16 — a tough first weekend for the new American team. Perez' experience is invaluable for building Cadillac into a competitive outfit.",
+      "careerStats": {
+        "wins": 10,
+        "poles": 3,
+        "worldTitles": 0,
+        "racesEntered": 262,
+        "podiums": 42,
+        "fastestLaps": 13,
+        "pointsScored": 1479
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 16,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 83,
+        "racePace": 85,
+        "tyreManagement": 91,
+        "wetWeather": 83,
+        "consistency": 83,
+        "aggression": 82
+      },
+      "strengths": [
+        "World-class tyre management — one of the best on the grid",
+        "Experience managing race tyres over enormous distances",
+        "Vital role in building a new team from the ground up",
+        "10 career race wins — proven race-winner credentials"
+      ],
+      "weaknesses": [
+        "Cadillac car expected to be at the back initially",
+        "P16 in Australia — major gap to close to the points"
+      ]
+    },
+    {
+      "id": "bottas",
+      "firstName": "Valtteri",
+      "lastName": "Bottas",
+      "number": 77,
+      "flag": "🇫🇮",
+      "nationality": "Finnish",
+      "team": "cadillac",
+      "age": 36,
+      "dateOfBirth": "1989-08-28",
+      "placeOfBirth": "Nastola, Finland",
+      "biography": "Returns to a full-time race seat with new team Cadillac after being a Mercedes reserve driver in 2025. A retirement in Australia with a mechanical failure while running in the top fifteen was disappointing, but Bottas will be a key development driver as Cadillac builds toward competitiveness.",
+      "careerStats": {
+        "wins": 10,
+        "poles": 20,
+        "worldTitles": 0,
+        "racesEntered": 222,
+        "podiums": 67,
+        "fastestLaps": 19,
+        "pointsScored": 1731
+      },
+      "season2026": {
+        "points": 0,
+        "championshipPosition": 18,
+        "wins": 0,
+        "podiums": 0,
+        "poles": 0
+      },
+      "ratings": {
+        "qualifying": 86,
+        "racePace": 84,
+        "tyreManagement": 85,
+        "wetWeather": 84,
+        "consistency": 84,
+        "aggression": 80
+      },
+      "strengths": [
+        "10 career race wins and 67 podiums — proven speed at top level",
+        "Strong technical development skills from Mercedes years",
+        "Consistent and reliable — rarely makes unforced errors",
+        "Qualifying pace — 20 career pole positions"
+      ],
+      "weaknesses": [
+        "Cadillac expected to need time to reach midfield pace",
+        "Retirement in Australia — reliability is Cadillac's challenge"
+      ]
+    }
+  ]
+};
+    const tData   = {
+  "season": 2026,
+  "teams": [
+    {
+      "id": "mercedes",
+      "name": "Mercedes-AMG PETRONAS Formula One Team",
+      "shortName": "Mercedes",
+      "color": "#00D2BE",
+      "drivers": ["russell", "antonelli"],
+      "headquarters": "Brackley, England",
+      "teamPrincipal": "Toto Wolff",
+      "engineSupplier": "Mercedes",
+      "engineDesignation": "Mercedes-AMG F1 M17 E Performance",
+      "chassis": "W17",
+      "firstSeason": 1954,
+      "constructorsTitles": 8,
+      "history": "After stumbling with the 2022 ground-effect regulations, Mercedes returned to dominance in 2026 with the W17 — the fastest car at pre-season testing and the overwhelming favourite for both titles. George Russell led Kimi Antonelli to a crushing 1-2 in Australia, confirming Mercedes as the class of the new regulation era. Toto Wolff's Silver Arrows have reloaded magnificently.",
+      "season2026": {
+        "points": 43,
+        "position": 1,
+        "wins": 1
+      }
+    },
+    {
+      "id": "ferrari",
+      "name": "Scuderia Ferrari HP",
+      "shortName": "Ferrari",
+      "color": "#E8002D",
+      "drivers": ["leclerc", "hamilton"],
+      "headquarters": "Maranello, Italy",
+      "teamPrincipal": "Frédéric Vasseur",
+      "engineSupplier": "Ferrari",
+      "engineDesignation": "Ferrari 066/14",
+      "chassis": "SF-26",
+      "firstSeason": 1950,
+      "constructorsTitles": 16,
+      "history": "The most iconic team in Formula 1 history entered 2026 with the most high-profile driver pairing ever assembled: Lewis Hamilton joining Charles Leclerc. The SF-26 showed excellent race pace in Australia with Ferrari leading the early laps. Third and fourth at Albert Park left Ferrari 16 points behind Mercedes — close enough to fight all season.",
+      "season2026": {
+        "points": 27,
+        "position": 2,
+        "wins": 0
+      }
+    },
+    {
+      "id": "mclaren",
+      "name": "McLaren Mastercard F1 Team",
+      "shortName": "McLaren",
+      "color": "#FF8000",
+      "drivers": ["norris", "piastri"],
+      "headquarters": "Woking, England",
+      "teamPrincipal": "Andrea Stella",
+      "engineSupplier": "Mercedes",
+      "engineDesignation": "Mercedes-AMG F1 M17 E Performance",
+      "chassis": "MCL40",
+      "firstSeason": 1966,
+      "constructorsTitles": 9,
+      "history": "Reigning back-to-back Constructors' Champions entering 2026 as title defenders. The MCL40 with Mercedes power appeared a step behind the W17 in Australia — Norris finishing fifth and Piastri suffering the cruellest of home-race DNS. McLaren has demonstrated the ability to develop rapidly and will be in the title fight.",
+      "season2026": {
+        "points": 10,
+        "position": 3,
+        "wins": 0
+      }
+    },
+    {
+      "id": "redbull",
+      "name": "Oracle Red Bull Racing",
+      "shortName": "Red Bull",
+      "color": "#3671C6",
+      "drivers": ["verstappen", "hadjar"],
+      "headquarters": "Milton Keynes, England",
+      "teamPrincipal": "Laurent Mekies",
+      "engineSupplier": "Red Bull Ford Powertrains",
+      "engineDesignation": "Red Bull Ford Powertrains 1.6L V6 Turbo-Hybrid",
+      "chassis": "RB22",
+      "firstSeason": 2005,
+      "constructorsTitles": 6,
+      "history": "Red Bull enter 2026 with a major powertrain change — replacing Honda with their own Red Bull Powertrains unit developed in partnership with Ford. Laurent Mekies leads the team after taking over from Christian Horner. Despite a dreadful Australian qualifying for Verstappen (Q1 crash), the four-time champion charged from 20th to 6th. Hadjar's retirement was costly. RB22 needs development to close the gap to Mercedes.",
+      "season2026": {
+        "points": 8,
+        "position": 4,
+        "wins": 0
+      }
+    },
+    {
+      "id": "astonmartin",
+      "name": "Aston Martin Aramco Formula One Team",
+      "shortName": "Aston Martin",
+      "color": "#229971",
+      "drivers": ["alonso", "stroll"],
+      "headquarters": "Silverstone, England",
+      "teamPrincipal": "Andy Cowell",
+      "engineSupplier": "Honda Racing Corporation",
+      "engineDesignation": "Honda Racing Corporation (HRC) RBPTH002",
+      "chassis": "AMR26",
+      "firstSeason": 2021,
+      "constructorsTitles": 0,
+      "history": "Aston Martin secured an exclusive works partnership with Honda Racing Corporation for 2026 — a major coup as Honda ended its relationship with Red Bull. The promise of factory Honda power raises hopes of challenging for wins. However, a double DNF at Australia's opener with suspected electrical issues was a bitter blow. Both Alonso and Stroll will be pushing hard for points from China onwards.",
+      "season2026": {
+        "points": 0,
+        "position": 9,
+        "wins": 0
+      }
+    },
+    {
+      "id": "williams",
+      "name": "Atlassian Williams F1 Team",
+      "shortName": "Williams",
+      "color": "#037AFF",
+      "drivers": ["albon", "sainz"],
+      "headquarters": "Grove, England",
+      "teamPrincipal": "James Vowles",
+      "engineSupplier": "Mercedes",
+      "engineDesignation": "Mercedes-AMG F1 M17 E Performance",
+      "chassis": "FW48",
+      "firstSeason": 1977,
+      "constructorsTitles": 9,
+      "history": "Williams bring in Carlos Sainz alongside Alex Albon for 2026, continuing their Mercedes engine partnership. Under James Vowles, the team is rebuilding toward the front of the midfield. Sainz offers a significant step up in driver quality — his speed and experience will accelerate the FW48's development.",
+      "season2026": {
+        "points": 0,
+        "position": 9,
+        "wins": 0
+      }
+    },
+    {
+      "id": "racingbulls",
+      "name": "Visa Cash App Racing Bulls Formula One Team",
+      "shortName": "Racing Bulls",
+      "color": "#6692FF",
+      "drivers": ["lawson", "lindblad"],
+      "headquarters": "Faenza, Italy",
+      "teamPrincipal": "Laurent Mekies",
+      "engineSupplier": "Red Bull Ford Powertrains",
+      "engineDesignation": "Red Bull Ford Powertrains 1.6L V6 Turbo-Hybrid",
+      "chassis": "VCARB03",
+      "firstSeason": 2006,
+      "constructorsTitles": 0,
+      "history": "Red Bull's second team enters 2026 with the new Ford-backed Powertrains engine alongside the new VCARB03 chassis. Lawson and rookie Lindblad — both made Q3 in Australia, a stunning achievement — with Lindblad scoring points on debut. Racing Bulls are regularly punching above their weight.",
+      "season2026": {
+        "points": 4,
+        "position": 5,
+        "wins": 0
+      }
+    },
+    {
+      "id": "haas",
+      "name": "TGR Haas F1 Team",
+      "shortName": "Haas",
+      "color": "#B6BABD",
+      "drivers": ["bearman", "ocon"],
+      "headquarters": "Kannapolis, USA",
+      "teamPrincipal": "Ayao Komatsu",
+      "engineSupplier": "Ferrari",
+      "engineDesignation": "Ferrari 066/14",
+      "chassis": "VF-26",
+      "firstSeason": 2016,
+      "constructorsTitles": 0,
+      "history": "Haas enters 2026 with a refreshed identity — Toyota's performance division TGR joining as a major sponsor, with Bearman and Ocon as an exciting all-new driver lineup. Pre-season testing suggested the VF-26 is genuinely competitive, and P7 for Bearman in Australia confirmed real promise. The Ferrari power unit is expected to be strong this year.",
+      "season2026": {
+        "points": 6,
+        "position": 6,
+        "wins": 0
+      }
+    },
+    {
+      "id": "audi",
+      "name": "Audi Revolut F1 Team",
+      "shortName": "Audi",
+      "color": "#C00000",
+      "drivers": ["hulkenberg", "bortoleto"],
+      "headquarters": "Hinwil, Switzerland",
+      "teamPrincipal": "Jonathan Wheatley",
+      "engineSupplier": "Audi",
+      "engineDesignation": "Audi F1 P.U. 2026",
+      "chassis": "R26",
+      "firstSeason": 2026,
+      "constructorsTitles": 0,
+      "history": "Audi's long-awaited Formula 1 debut arrived in 2026, replacing the Sauber operation they purchased. With Jonathan Wheatley as team principal and the all-new R26 chassis using their own power unit developed at Neuburg, expectations were cautious — but Bortoleto's P9 gave them points in their very first race. Hulkenberg's DNS was a setback, but the team showed genuine pace.",
+      "season2026": {
+        "points": 2,
+        "position": 7,
+        "wins": 0
+      }
+    },
+    {
+      "id": "alpine",
+      "name": "BWT Alpine Formula One Team",
+      "shortName": "Alpine",
+      "color": "#0090FF",
+      "drivers": ["gasly", "colapinto"],
+      "headquarters": "Enstone, England",
+      "teamPrincipal": "Flavio Briatore",
+      "engineSupplier": "Mercedes",
+      "engineDesignation": "Mercedes-AMG F1 M17 E Performance",
+      "chassis": "A526",
+      "firstSeason": 2021,
+      "constructorsTitles": 0,
+      "history": "Alpine made a pivotal switch from Renault to Mercedes customer power for 2026 — controversially ending Renault's 25-year engine programme. Under Flavio Briatore's presidency, the team has Gasly and new signing Colapinto. Gasly's P10 in Australia was encouraging, and the A526 is the first Alpine powered by Mercedes since the team was called Lotus.",
+      "season2026": {
+        "points": 1,
+        "position": 8,
+        "wins": 0
+      }
+    },
+    {
+      "id": "cadillac",
+      "name": "Cadillac Formula 1 Team",
+      "shortName": "Cadillac",
+      "color": "#C8A217",
+      "drivers": ["perez", "bottas"],
+      "headquarters": "Concord, USA",
+      "teamPrincipal": "Graeme Lowdon",
+      "engineSupplier": "Ferrari",
+      "engineDesignation": "Ferrari 066/14",
+      "chassis": "CGX26",
+      "firstSeason": 2026,
+      "constructorsTitles": 0,
+      "history": "Formula 1's eleventh team makes its debut in 2026 — the first new team since Haas joined in 2016. Cadillac (backed by General Motors and TWG Global) uses Ferrari power units and gearboxes, with experienced pairing of Perez and Bottas. A tough debut in Australia with Perez P16 and Bottas retiring, but the team is building for the future with their own GM power unit planned from 2029.",
+      "season2026": {
+        "points": 0,
+        "position": 11,
+        "wins": 0
+      }
+    }
+  ]
+};
+    const cData   = {
+  "season": 2026,
+  "regulationEra": "2026 — New Power Unit regulations (1.6L V6 Turbo-Hybrid, MGU-H removed, MGU-K output increased to 470 bhp / 350 kW). Active aerodynamics replacing DRS with Manual Override Mode. Shorter (340 cm) and lighter chassis.",
+  "metricDescriptions": {
+    "topSpeed": "Straight-line top speed capability. Higher = better at power circuits like Monza and Baku.",
+    "downforce": "Aerodynamic force pushing the car into the track. More downforce = faster through corners, slower on straights.",
+    "cornering": "Mechanical and aerodynamic handling through bends. Combines downforce, suspension geometry and mechanical grip.",
+    "tyreManagement": "How gently the car treats its tyres. Better management = fewer pit stops and more strategic flexibility.",
+    "dragEfficiency": "How cleanly the car converts aerodynamic load into speed. High efficiency = fast everywhere.",
+    "powerUnitDeployment": "How effectively the car deploys its hybrid energy. Critical under 2026's near 50/50 ICE/ERS power split."
+  },
+  "cars": [
+    {
+      "id": "mercedes_w17",
+      "team": "mercedes",
+      "name": "Mercedes W17",
+      "fullDesignation": "Mercedes-AMG PETRONAS F1 W17 E Performance",
+      "chassis": "W17",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "engineType": "1.6L V6 Turbocharged + ERS (MGU-H removed, enhanced MGU-K 470 bhp)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum, 30 kg lighter than 2025)",
+      "aerodynamicConcept": "Mercedes opted for a low-rake philosophy with sophisticated active aerodynamic surfaces that manage drag exceptionally well. The W17's active front and rear wings can flatten fully to minimise drag on straights while generating peak downforce in corners. Mercedes' power unit deployment is regarded as the best on the grid — leaving Bahrain testing as the clear benchmark.",
+      "metrics": {
+        "topSpeed": 96,
+        "downforce": 88,
+        "cornering": 90,
+        "tyreManagement": 90,
+        "dragEfficiency": 95,
+        "powerUnitDeployment": 98
+      },
+      "strengths": [
+        "Outstanding power unit — dominant in both ICE and ERS deployment",
+        "Active aerodynamics system is the most sophisticated on the grid",
+        "Excellent tyre management over long stints — completed 46 laps on hard tyres in Australia",
+        "Fastest car in straight lines and through medium-speed corners"
+      ],
+      "weaknesses": [
+        "Some concern over active aero complexity creating reliability risk",
+        "Cars need some energy management in race to avoid running low"
+      ],
+      "regulations2026Notes": "The W17 is Mercedes' response to their poor 2022 ground-effect regulation interpretation. They have applied lessons from three years of development, re-designing their power unit deployment philosophy completely for the 2026 regulations."
+    },
+    {
+      "id": "ferrari_sf26",
+      "team": "ferrari",
+      "name": "Ferrari SF-26",
+      "fullDesignation": "Scuderia Ferrari HP SF-26",
+      "chassis": "SF-26",
+      "engine": "Ferrari 066/14",
+      "engineType": "1.6L V6 Turbocharged + ERS (MGU-H removed, enhanced MGU-K 470 bhp)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "Ferrari developed a novel rear wing mechanism for the SF-26 that can rotate 180 degrees — one of the most innovative aero solutions on the 2026 grid. The car showed exceptional launch acceleration in Australia, aided by its turbocharger design optimised for the new start procedures. Ferrari leads the field in race-start aerodynamic exploitation.",
+      "metrics": {
+        "topSpeed": 93,
+        "downforce": 89,
+        "cornering": 89,
+        "tyreManagement": 83,
+        "dragEfficiency": 90,
+        "powerUnitDeployment": 91
+      },
+      "strengths": [
+        "Innovative rotating rear wing — unique active aero advantage at certain circuits",
+        "Exceptional launch speed from standstill — best starts on the grid",
+        "Strong power unit deployment over a qualifying lap",
+        "Leclerc and Hamilton both capable of maximising the car's potential"
+      ],
+      "weaknesses": [
+        "Tyre degradation higher than Mercedes — forced to one-stop in Australia and fell back",
+        "Strategy calls under VSC cost them the win at Australia opener",
+        "Energy depletion in race conditions a concern"
+      ],
+      "regulations2026Notes": "Ferrari's all-new 066/14 power unit is one of three brand-new manufacturer power units for 2026. Ferrari is the only team to have competed in every F1 season since 1950 using their own engine. They also supply Haas and Cadillac as customer teams."
+    },
+    {
+      "id": "mclaren_mcl40",
+      "team": "mclaren",
+      "name": "McLaren MCL40",
+      "fullDesignation": "McLaren Mastercard F1 Team MCL40",
+      "chassis": "MCL40",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "engineType": "1.6L V6 Turbocharged + ERS (customer Mercedes power unit)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The MCL40 represents McLaren's adaptation to the 2026 regulations building on their back-to-back championship-winning MCL38 and MCL39. The team retained their strong aerodynamic philosophy while integrating Mercedes' customer power unit. Early indications from Australia suggest McLaren are slightly behind Mercedes in outright pace, but their development rate has been exceptional in recent years.",
+      "metrics": {
+        "topSpeed": 92,
+        "downforce": 90,
+        "cornering": 91,
+        "tyreManagement": 89,
+        "dragEfficiency": 91,
+        "powerUnitDeployment": 90
+      },
+      "strengths": [
+        "Strong mechanical platform from back-to-back championship seasons",
+        "Excellent cornering balance — high-speed corners are a McLaren strength",
+        "Proven development pace — expected to close gap to Mercedes rapidly",
+        "Two world-class drivers capable of maximising the package"
+      ],
+      "weaknesses": [
+        "Step behind Mercedes in outright power unit performance",
+        "Energy deployment issues noted in Australia qualifying",
+        "Piastri DNS in Australia — points gap to close in championship"
+      ],
+      "regulations2026Notes": "McLaren uses Mercedes customer power units and has done since 2021, renewing the partnership through to at least 2030. The MCL40 is the first McLaren designed under the 2026 regulations."
+    },
+    {
+      "id": "redbull_rb22",
+      "team": "redbull",
+      "name": "Red Bull RB22",
+      "fullDesignation": "Oracle Red Bull Racing RB22",
+      "chassis": "RB22",
+      "engine": "Red Bull Ford Powertrains 1.6L V6 Turbo-Hybrid",
+      "engineType": "1.6L V6 Turbocharged + ERS — first Red Bull Powertrains-designed power unit with Ford technical partnership",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The RB22 was unveiled in Detroit, Ford's home city, and represents a completely new design philosophy from Red Bull following the departure of Adrian Newey. The team has invested massively in their in-house powertrain facility. Early signs from Australia suggest the RB22 is not yet at the level of Mercedes, but Verstappen's recovery from 20th to 6th confirmed strong race pace.",
+      "metrics": {
+        "topSpeed": 90,
+        "downforce": 91,
+        "cornering": 90,
+        "tyreManagement": 91,
+        "dragEfficiency": 88,
+        "powerUnitDeployment": 87
+      },
+      "strengths": [
+        "Verstappen's ability to maximise even a non-optimal car",
+        "Strong mechanical grip and tyre management in race conditions",
+        "Six constructors' titles worth of chassis development knowledge",
+        "Ford partnership adds engineering resources and expertise"
+      ],
+      "weaknesses": [
+        "Red Bull Ford power unit not yet at Mercedes or Ferrari level",
+        "RB22 showed qualifying deficit of close to 1 second vs Mercedes in Australia",
+        "Reliability concerns — Hadjar DNF in race 1 with engine issue"
+      ],
+      "regulations2026Notes": "The RB22 is powered by Red Bull's own power unit — developed in partnership with Ford, which returned to F1 as an engine supplier for the first time since 2004. It is the first Red Bull car not powered by Honda or Renault since 2018."
+    },
+    {
+      "id": "astonmartin_amr26",
+      "team": "astonmartin",
+      "name": "Aston Martin AMR26",
+      "fullDesignation": "Aston Martin Aramco AMR26",
+      "chassis": "AMR26",
+      "engine": "Honda Racing Corporation (HRC) RBPTH002",
+      "engineType": "1.6L V6 Turbocharged + ERS — exclusive Honda works partnership",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The AMR26 represents a new chapter for Aston Martin under their exclusive Honda works agreement — the Japanese manufacturer's first works team since they left Red Bull. Andy Cowell's engineering team has high hopes for the HRC power unit's potential in 2026. A double DNF in Australia has delayed assessment of true pace, but expectations are for a significant step forward.",
+      "metrics": {
+        "topSpeed": 89,
+        "downforce": 87,
+        "cornering": 87,
+        "tyreManagement": 88,
+        "dragEfficiency": 88,
+        "powerUnitDeployment": 88
+      },
+      "strengths": [
+        "Exclusive Honda works power — full factory support and development priority",
+        "Fernando Alonso's feedback unparalleled for development direction",
+        "Honda's determination to prove themselves after Red Bull split",
+        "Andy Cowell's powertrain expertise from Mercedes championship era"
+      ],
+      "weaknesses": [
+        "Honda power unit needs race mileage to establish reliability",
+        "Double DNF in Australia — electrical reliability concerns need resolving",
+        "Aero concept needs more data after Australia problems"
+      ],
+      "regulations2026Notes": "Honda returns as a full works engine partner for the first time since their split with McLaren in 1992, entering an exclusive deal with Aston Martin. Honda had been supplying Red Bull under their Red Bull Powertrains banner since 2022."
+    },
+    {
+      "id": "williams_fw48",
+      "team": "williams",
+      "name": "Williams FW48",
+      "fullDesignation": "Atlassian Williams FW48",
+      "chassis": "FW48",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "engineType": "1.6L V6 Turbocharged + ERS (customer Mercedes power unit)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "Williams continues their recovery under James Vowles with the FW48 — their second car designed under the current technical direction. The addition of Carlos Sainz alongside Albon gives them one of the strongest driver pairings relative to a midfield team. Sainz's technical feedback will be key to accelerating the FW48's development.",
+      "metrics": {
+        "topSpeed": 91,
+        "downforce": 84,
+        "cornering": 83,
+        "tyreManagement": 85,
+        "dragEfficiency": 90,
+        "powerUnitDeployment": 90
+      },
+      "strengths": [
+        "Mercedes customer power — same energy deployment as W17",
+        "Carlos Sainz's technical development ability is exceptional",
+        "Good straight-line speed with Mercedes power",
+        "Improving team structure under James Vowles leadership"
+      ],
+      "weaknesses": [
+        "Aerodynamic package still below the top midfield teams",
+        "Sainz technical failure in qualifying Australia cost valuable data",
+        "Chassis downforce levels below Ferrari and Mercedes-backed teams"
+      ],
+      "regulations2026Notes": "Williams uses Mercedes customer power for 2026, following the same package as McLaren and Alpine. The FW48 is designed under the 2026 regulations and is the first Williams to feature the active aerodynamic systems mandated by the new rules."
+    },
+    {
+      "id": "racingbulls_vcarb03",
+      "team": "racingbulls",
+      "name": "Racing Bulls VCARB03",
+      "fullDesignation": "Visa Cash App Racing Bulls VCARB 03",
+      "chassis": "VCARB03",
+      "engine": "Red Bull Ford Powertrains 1.6L V6 Turbo-Hybrid",
+      "engineType": "1.6L V6 Turbocharged + ERS — same Red Bull Ford unit as RB22",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The VCARB03 continues Racing Bulls' tradition of punching above their weight in the midfield. Both Lawson and rookie Lindblad made Q3 in Australia — an exceptional result. The car shares key components with the RB22 and benefits from Red Bull's design expertise.",
+      "metrics": {
+        "topSpeed": 89,
+        "downforce": 85,
+        "cornering": 85,
+        "tyreManagement": 84,
+        "dragEfficiency": 87,
+        "powerUnitDeployment": 86
+      },
+      "strengths": [
+        "Both drivers in Q3 at Australia — excellent chassis for the package",
+        "Red Bull design philosophy transferred to a lighter, more agile platform",
+        "Excellent driver pairing — both Lawson and Lindblad are very quick",
+        "Strong midfield competitiveness expected all season"
+      ],
+      "weaknesses": [
+        "Red Bull Ford power unit shares same deficit vs Mercedes as the RB22",
+        "Budget restrictions limit development rate vs top teams"
+      ],
+      "regulations2026Notes": "Racing Bulls — previously known as Toro Rosso and then AlphaTauri — uses the same Red Bull Ford power unit as the senior Red Bull Racing team. Their base in Faenza, Italy gives them a distinct Italian design culture that complements Red Bull's Austrian headquarters."
+    },
+    {
+      "id": "haas_vf26",
+      "team": "haas",
+      "name": "Haas VF-26",
+      "fullDesignation": "TGR Haas F1 VF-26",
+      "chassis": "VF-26",
+      "engine": "Ferrari 066/14",
+      "engineType": "1.6L V6 Turbocharged + ERS (customer Ferrari power unit)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The VF-26 features a refreshed look with Toyota's TGR performance brand dominating the engine cover in 2026. Haas's tradition of using customer Ferrari components extensively gives them an advantage in reliability — and the Ferrari power unit is expected to be particularly strong in 2026. Bearman's P7 in Australia confirmed the car can genuinely challenge the top midfield.",
+      "metrics": {
+        "topSpeed": 90,
+        "downforce": 84,
+        "cornering": 84,
+        "tyreManagement": 83,
+        "dragEfficiency": 89,
+        "powerUnitDeployment": 89
+      },
+      "strengths": [
+        "Ferrari customer power unit — one of the strongest PUs on the grid",
+        "P7 for Bearman in Australia — genuine midfield fighter",
+        "TGR partnership brings additional engineering resource",
+        "Haas' lean, efficient operational model"
+      ],
+      "weaknesses": [
+        "Customer team — cannot influence Ferrari PU development direction",
+        "Aerodynamic package limited by budget restrictions"
+      ],
+      "regulations2026Notes": "Haas uses Ferrari power units and gearboxes as a customer team — a relationship that has existed since the team's debut in 2016. Ferrari also supplies Cadillac in 2026, meaning three teams run Ferrari power."
+    },
+    {
+      "id": "audi_r26",
+      "team": "audi",
+      "name": "Audi R26",
+      "fullDesignation": "Audi Revolut F1 R26",
+      "chassis": "R26",
+      "engine": "Audi F1 P.U. 2026",
+      "engineType": "1.6L V6 Turbocharged + ERS — Audi's first works F1 power unit",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The R26 is Audi's first Formula 1 car as a works manufacturer, built at the historic Sauber facility in Hinwil, Switzerland and powered by Audi's new power unit developed at their specialist facility in Neuburg, Germany. Bortoleto's P9 in Australia — scoring Audi's first ever F1 points — was a historic moment. Hulkenberg's DNS was a setback, but the pace potential is real.",
+      "metrics": {
+        "topSpeed": 87,
+        "downforce": 82,
+        "cornering": 82,
+        "tyreManagement": 83,
+        "dragEfficiency": 85,
+        "powerUnitDeployment": 84
+      },
+      "strengths": [
+        "Historic first race points with Bortoleto P9 in Australia",
+        "Full manufacturer investment — significant resource for development",
+        "Jonathan Wheatley's leadership brings Red Bull championship-winning culture",
+        "Bortoleto showed genuine pace — Q3 before technical failure"
+      ],
+      "weaknesses": [
+        "New power unit not yet at Mercedes or Ferrari level of development",
+        "Hulkenberg DNS in Australia — reliability critical to improve",
+        "Starting from a lower base than established manufacturers"
+      ],
+      "regulations2026Notes": "Audi purchased the Sauber operation in 2022 and has been developing their power unit since. The 2026 season marks the start of their full works F1 programme. They replaced Kick Sauber, who used Ferrari engines in 2024 and 2025. Audi's predecessor Auto Union competed in Grand Prix racing before World War II."
+    },
+    {
+      "id": "alpine_a526",
+      "team": "alpine",
+      "name": "Alpine A526",
+      "fullDesignation": "BWT Alpine F1 A526",
+      "chassis": "A526",
+      "engine": "Mercedes-AMG F1 M17 E Performance",
+      "engineType": "1.6L V6 Turbocharged + ERS (customer Mercedes power unit)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The A526 is the first Alpine powered by a Mercedes customer power unit — a controversial switch from the Renault engine that the team had used since 2016. The blue and pink BWT livery continues with several eye-catching aerodynamic details. After finishing last in 2025, Alpine has thrown everything at the 2026 regulations reset. Gasly's P10 in Australia was the first encouraging sign.",
+      "metrics": {
+        "topSpeed": 91,
+        "downforce": 83,
+        "cornering": 82,
+        "tyreManagement": 83,
+        "dragEfficiency": 90,
+        "powerUnitDeployment": 90
+      },
+      "strengths": [
+        "Mercedes customer power — significant upgrade from Renault",
+        "Experienced driver pairing of Gasly and Colapinto",
+        "Strong straight-line speed with Mercedes PU",
+        "Gasly P10 in Australia — points on board from race 1"
+      ],
+      "weaknesses": [
+        "Transitioning from works to customer team — lost technical control of PU",
+        "Finished last in 2025 — need significant aerodynamic improvement",
+        "Colapinto stop-go penalty Australia — cost of inexperience"
+      ],
+      "regulations2026Notes": "Alpine switched from Renault to Mercedes customer power for 2026 — ending Renault's F1 engine programme that had run since 2000 (first season without Renault engines). The A526 is the first Team Enstone car to use Mercedes power since they raced as Lotus in 2015."
+    },
+    {
+      "id": "cadillac_cgx26",
+      "team": "cadillac",
+      "name": "Cadillac CGX26",
+      "fullDesignation": "Cadillac Formula 1 CGX26",
+      "chassis": "CGX26",
+      "engine": "Ferrari 066/14",
+      "engineType": "1.6L V6 Turbocharged + ERS (customer Ferrari power unit and gearbox)",
+      "powerOutput": "~1,000 bhp combined",
+      "weight": "768 kg (minimum)",
+      "aerodynamicConcept": "The CGX26 is Cadillac's first ever Formula 1 car — designed at their Concord, North Carolina facility with assistance from Ferrari who supply not just the power unit but also the gearbox. As an expansion team, the CGX26 is not expected to challenge the midfield immediately, but the programme has significant ambitions backed by General Motors' resources.",
+      "metrics": {
+        "topSpeed": 87,
+        "downforce": 79,
+        "cornering": 78,
+        "tyreManagement": 82,
+        "dragEfficiency": 85,
+        "powerUnitDeployment": 87
+      },
+      "strengths": [
+        "Ferrari power unit and gearbox — good package to learn with",
+        "Significant GM backing — resources to develop rapidly",
+        "Experienced drivers in Perez and Bottas to guide development",
+        "First new team in F1 since Haas joined in 2016"
+      ],
+      "weaknesses": [
+        "Brand new team — inevitably playing catch-up on aerodynamic development",
+        "Bottas retirement and Perez P16 in Australia — expected tough start",
+        "Own GM power unit not planned until 2029"
+      ],
+      "regulations2026Notes": "Cadillac became the first new F1 team since Haas in 2016. The team uses Ferrari power units and gearboxes while developing their own GM power unit for a future season. General Motors plans to introduce their own engine from 2029. The team is operated by TWG Global, formerly associated with the Andretti Global bid."
+    }
+  ]
+};
+    const rData   = {
+  "season": 2026,
+  "totalRounds": 24,
+  "sprintRounds": ["r2", "r6", "r7", "r11", "r14", "r18"],
+  "races": [
+    {
+      "id": "r1",
+      "round": 1,
+      "name": "Australian Grand Prix",
+      "shortName": "Australian GP",
+      "country": "Australia",
+      "flag": "🇦🇺",
+      "circuit": {
+        "name": "Albert Park Circuit",
+        "location": "Melbourne, Victoria",
+        "country": "Australia",
+        "lapLength": 5.278,
+        "lapLengthUnit": "km",
+        "totalLaps": 58,
+        "circuitType": "Street/Permanent",
+        "direction": "Clockwise",
+        "drsZones": 0,
+        "notes": "DRS replaced by Manual Override Mode (MOM) in 2026 regulations"
+      },
+      "schedule": {
+        "weekendDates": "6–8 March 2026",
+        "practiceOne": "2026-03-06",
+        "practiceTwo": "2026-03-06",
+        "practiceThree": "2026-03-07",
+        "qualifying": "2026-03-07",
+        "race": "2026-03-08"
+      },
+      "status": "completed",
+      "laps": 58,
+      "distance": 306.124,
+      "sprint": false
+    },
+    {
+      "id": "r2",
+      "round": 2,
+      "name": "Chinese Grand Prix",
+      "shortName": "Chinese GP",
+      "country": "China",
+      "flag": "🇨🇳",
+      "circuit": {
+        "name": "Shanghai International Circuit",
+        "location": "Shanghai",
+        "country": "China",
+        "lapLength": 5.451,
+        "lapLengthUnit": "km",
+        "totalLaps": 56,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "13–15 March 2026",
+        "race": "2026-03-15"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend"
+    },
+    {
+      "id": "r3",
+      "round": 3,
+      "name": "Japanese Grand Prix",
+      "shortName": "Japanese GP",
+      "country": "Japan",
+      "flag": "🇯🇵",
+      "circuit": {
+        "name": "Suzuka International Racing Course",
+        "location": "Suzuka, Mie Prefecture",
+        "country": "Japan",
+        "lapLength": 5.807,
+        "lapLengthUnit": "km",
+        "totalLaps": 53,
+        "circuitType": "Permanent",
+        "direction": "Mixed (figure-of-eight)"
+      },
+      "schedule": {
+        "weekendDates": "27–29 March 2026",
+        "race": "2026-03-29"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r4",
+      "round": 4,
+      "name": "Bahrain Grand Prix",
+      "shortName": "Bahrain GP",
+      "country": "Bahrain",
+      "flag": "🇧🇭",
+      "circuit": {
+        "name": "Bahrain International Circuit",
+        "location": "Sakhir",
+        "country": "Bahrain",
+        "lapLength": 5.412,
+        "lapLengthUnit": "km",
+        "totalLaps": 57,
+        "circuitType": "Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "10–12 April 2026",
+        "race": "2026-04-12"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Moved to April due to Ramadan in February/March"
+    },
+    {
+      "id": "r5",
+      "round": 5,
+      "name": "Saudi Arabian Grand Prix",
+      "shortName": "Saudi Arabian GP",
+      "country": "Saudi Arabia",
+      "flag": "🇸🇦",
+      "circuit": {
+        "name": "Jeddah Corniche Circuit",
+        "location": "Jeddah",
+        "country": "Saudi Arabia",
+        "lapLength": 6.174,
+        "lapLengthUnit": "km",
+        "totalLaps": 50,
+        "circuitType": "Street",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "17–19 April 2026",
+        "race": "2026-04-19"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Moved to April due to Ramadan in February/March"
+    },
+    {
+      "id": "r6",
+      "round": 6,
+      "name": "Miami Grand Prix",
+      "shortName": "Miami GP",
+      "country": "USA",
+      "flag": "🇺🇸",
+      "circuit": {
+        "name": "Miami International Autodrome",
+        "location": "Miami Gardens, Florida",
+        "country": "USA",
+        "lapLength": 5.412,
+        "lapLengthUnit": "km",
+        "totalLaps": 57,
+        "circuitType": "Street/Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "1–3 May 2026",
+        "race": "2026-05-03"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend"
+    },
+    {
+      "id": "r7",
+      "round": 7,
+      "name": "Canadian Grand Prix",
+      "shortName": "Canadian GP",
+      "country": "Canada",
+      "flag": "🇨🇦",
+      "circuit": {
+        "name": "Circuit Gilles Villeneuve",
+        "location": "Montreal, Quebec",
+        "country": "Canada",
+        "lapLength": 4.361,
+        "lapLengthUnit": "km",
+        "totalLaps": 70,
+        "circuitType": "Street/Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "22–24 May 2026",
+        "race": "2026-05-24"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend — moved earlier in season from June",
+      "notes": "Moved earlier to follow Miami GP for freight efficiency"
+    },
+    {
+      "id": "r8",
+      "round": 8,
+      "name": "Monaco Grand Prix",
+      "shortName": "Monaco GP",
+      "country": "Monaco",
+      "flag": "🇲🇨",
+      "circuit": {
+        "name": "Circuit de Monaco",
+        "location": "Monte Carlo, Monaco",
+        "country": "Monaco",
+        "lapLength": 3.337,
+        "lapLengthUnit": "km",
+        "totalLaps": 78,
+        "circuitType": "Street",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "5–7 June 2026",
+        "race": "2026-06-07"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Two-stop minimum rule dropped for 2026 — introduced in 2025 but deemed ineffective"
+    },
+    {
+      "id": "r9",
+      "round": 9,
+      "name": "Barcelona-Catalunya Grand Prix",
+      "shortName": "Barcelona-Catalunya GP",
+      "country": "Spain",
+      "flag": "🇪🇸",
+      "circuit": {
+        "name": "Circuit de Barcelona-Catalunya",
+        "location": "Montmeló, Catalonia",
+        "country": "Spain",
+        "lapLength": 4.675,
+        "lapLengthUnit": "km",
+        "totalLaps": 66,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "12–14 June 2026",
+        "race": "2026-06-14"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Renamed to Barcelona-Catalunya GP as the Spanish GP moves to Madrid in September"
+    },
+    {
+      "id": "r10",
+      "round": 10,
+      "name": "Austrian Grand Prix",
+      "shortName": "Austrian GP",
+      "country": "Austria",
+      "flag": "🇦🇹",
+      "circuit": {
+        "name": "Red Bull Ring",
+        "location": "Spielberg, Styria",
+        "country": "Austria",
+        "lapLength": 4.318,
+        "lapLengthUnit": "km",
+        "totalLaps": 71,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "26–28 June 2026",
+        "race": "2026-06-28"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r11",
+      "round": 11,
+      "name": "British Grand Prix",
+      "shortName": "British GP",
+      "country": "Great Britain",
+      "flag": "🇬🇧",
+      "circuit": {
+        "name": "Silverstone Circuit",
+        "location": "Silverstone, Northamptonshire",
+        "country": "Great Britain",
+        "lapLength": 5.891,
+        "lapLengthUnit": "km",
+        "totalLaps": 52,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "3–5 July 2026",
+        "race": "2026-07-05"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend — first British GP sprint since inaugural format in 2021"
+    },
+    {
+      "id": "r12",
+      "round": 12,
+      "name": "Belgian Grand Prix",
+      "shortName": "Belgian GP",
+      "country": "Belgium",
+      "flag": "🇧🇪",
+      "circuit": {
+        "name": "Circuit de Spa-Francorchamps",
+        "location": "Stavelot, Liège",
+        "country": "Belgium",
+        "lapLength": 7.004,
+        "lapLengthUnit": "km",
+        "totalLaps": 44,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "17–19 July 2026",
+        "race": "2026-07-19"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r13",
+      "round": 13,
+      "name": "Hungarian Grand Prix",
+      "shortName": "Hungarian GP",
+      "country": "Hungary",
+      "flag": "🇭🇺",
+      "circuit": {
+        "name": "Hungaroring",
+        "location": "Mogyoród, Budapest",
+        "country": "Hungary",
+        "lapLength": 4.381,
+        "lapLengthUnit": "km",
+        "totalLaps": 70,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "24–26 July 2026",
+        "race": "2026-07-26"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r14",
+      "round": 14,
+      "name": "Dutch Grand Prix",
+      "shortName": "Dutch GP",
+      "country": "Netherlands",
+      "flag": "🇳🇱",
+      "circuit": {
+        "name": "Circuit Zandvoort",
+        "location": "Zandvoort, North Holland",
+        "country": "Netherlands",
+        "lapLength": 4.259,
+        "lapLengthUnit": "km",
+        "totalLaps": 72,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "21–23 August 2026",
+        "race": "2026-08-23"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend",
+      "notes": "Final Dutch Grand Prix — organisers confirmed 2026 will be the last time the GP is held at Zandvoort"
+    },
+    {
+      "id": "r15",
+      "round": 15,
+      "name": "Italian Grand Prix",
+      "shortName": "Italian GP",
+      "country": "Italy",
+      "flag": "🇮🇹",
+      "circuit": {
+        "name": "Autodromo Nazionale Monza",
+        "location": "Monza, Lombardy",
+        "country": "Italy",
+        "lapLength": 5.793,
+        "lapLengthUnit": "km",
+        "totalLaps": 53,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "4–6 September 2026",
+        "race": "2026-09-06"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Emilia Romagna GP at Imola discontinued — not renewed for 2026"
+    },
+    {
+      "id": "r16",
+      "round": 16,
+      "name": "Spanish Grand Prix",
+      "shortName": "Spanish GP",
+      "country": "Spain",
+      "flag": "🇪🇸",
+      "circuit": {
+        "name": "Madring Circuit",
+        "location": "Madrid (IFEMA)",
+        "country": "Spain",
+        "lapLength": 5.476,
+        "lapLengthUnit": "km",
+        "totalLaps": 55,
+        "circuitType": "Street",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "11–13 September 2026",
+        "race": "2026-09-13"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "New street circuit in Madrid built around the IFEMA convention centre — F1 debut for Madrid"
+    },
+    {
+      "id": "r17",
+      "round": 17,
+      "name": "Azerbaijan Grand Prix",
+      "shortName": "Azerbaijan GP",
+      "country": "Azerbaijan",
+      "flag": "🇦🇿",
+      "circuit": {
+        "name": "Baku City Circuit",
+        "location": "Baku",
+        "country": "Azerbaijan",
+        "lapLength": 6.003,
+        "lapLengthUnit": "km",
+        "totalLaps": 51,
+        "circuitType": "Street",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "26–27 September 2026",
+        "race": "2026-09-26"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Race held on Saturday to accommodate Azerbaijan's Remembrance Day on Sunday"
+    },
+    {
+      "id": "r18",
+      "round": 18,
+      "name": "Singapore Grand Prix",
+      "shortName": "Singapore GP",
+      "country": "Singapore",
+      "flag": "🇸🇬",
+      "circuit": {
+        "name": "Marina Bay Street Circuit",
+        "location": "Marina Bay, Singapore",
+        "country": "Singapore",
+        "lapLength": 4.94,
+        "lapLengthUnit": "km",
+        "totalLaps": 61,
+        "circuitType": "Street",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "9–11 October 2026",
+        "race": "2026-10-11"
+      },
+      "status": "upcoming",
+      "sprint": true,
+      "sprintNotes": "Sprint weekend"
+    },
+    {
+      "id": "r19",
+      "round": 19,
+      "name": "United States Grand Prix",
+      "shortName": "US GP",
+      "country": "USA",
+      "flag": "🇺🇸",
+      "circuit": {
+        "name": "Circuit of the Americas",
+        "location": "Austin, Texas",
+        "country": "USA",
+        "lapLength": 5.513,
+        "lapLengthUnit": "km",
+        "totalLaps": 56,
+        "circuitType": "Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "23–25 October 2026",
+        "race": "2026-10-25"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r20",
+      "round": 20,
+      "name": "Mexico City Grand Prix",
+      "shortName": "Mexico City GP",
+      "country": "Mexico",
+      "flag": "🇲🇽",
+      "circuit": {
+        "name": "Autodromo Hermanos Rodriguez",
+        "location": "Mexico City",
+        "country": "Mexico",
+        "lapLength": 4.304,
+        "lapLengthUnit": "km",
+        "totalLaps": 71,
+        "circuitType": "Permanent",
+        "direction": "Clockwise"
+      },
+      "schedule": {
+        "weekendDates": "31 Oct–2 November 2026",
+        "race": "2026-11-01"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r21",
+      "round": 21,
+      "name": "São Paulo Grand Prix",
+      "shortName": "São Paulo GP",
+      "country": "Brazil",
+      "flag": "🇧🇷",
+      "circuit": {
+        "name": "Autodromo José Carlos Pace (Interlagos)",
+        "location": "São Paulo",
+        "country": "Brazil",
+        "lapLength": 4.309,
+        "lapLengthUnit": "km",
+        "totalLaps": 71,
+        "circuitType": "Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "7–9 November 2026",
+        "race": "2026-11-08"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r22",
+      "round": 22,
+      "name": "Las Vegas Grand Prix",
+      "shortName": "Las Vegas GP",
+      "country": "USA",
+      "flag": "🇺🇸",
+      "circuit": {
+        "name": "Las Vegas Strip Circuit",
+        "location": "Las Vegas, Nevada",
+        "country": "USA",
+        "lapLength": 6.201,
+        "lapLengthUnit": "km",
+        "totalLaps": 50,
+        "circuitType": "Street",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "20–21 November 2026",
+        "race": "2026-11-21"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Race held on Saturday night"
+    },
+    {
+      "id": "r23",
+      "round": 23,
+      "name": "Qatar Grand Prix",
+      "shortName": "Qatar GP",
+      "country": "Qatar",
+      "flag": "🇶🇦",
+      "circuit": {
+        "name": "Lusail International Circuit",
+        "location": "Lusail",
+        "country": "Qatar",
+        "lapLength": 5.38,
+        "lapLengthUnit": "km",
+        "totalLaps": 57,
+        "circuitType": "Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "27–29 November 2026",
+        "race": "2026-11-29"
+      },
+      "status": "upcoming",
+      "sprint": false
+    },
+    {
+      "id": "r24",
+      "round": 24,
+      "name": "Abu Dhabi Grand Prix",
+      "shortName": "Abu Dhabi GP",
+      "country": "UAE",
+      "flag": "🇦🇪",
+      "circuit": {
+        "name": "Yas Marina Circuit",
+        "location": "Abu Dhabi",
+        "country": "UAE",
+        "lapLength": 5.281,
+        "lapLengthUnit": "km",
+        "totalLaps": 58,
+        "circuitType": "Permanent",
+        "direction": "Anti-clockwise"
+      },
+      "schedule": {
+        "weekendDates": "4–6 December 2026",
+        "race": "2026-12-06"
+      },
+      "status": "upcoming",
+      "sprint": false,
+      "notes": "Season finale"
+    }
+  ]
+};
+    const resData = {
+  "season": 2026,
+  "lastUpdated": "2026-03-08",
+  "pointsSystem": {
+    "positions": [25, 18, 15, 12, 10, 8, 6, 4, 2, 1],
+    "fastestLapPoint": 1,
+    "fastestLapCondition": "Driver must finish in top 10 to earn fastest lap point",
+    "notes": "22 cars on grid in 2026 — Q1 eliminates bottom 6, Q2 eliminates next 6, leaving 10 for Q3"
+  },
+  "driverStandings": [
+    { "position": 1,  "driverId": "russell",    "teamId": "mercedes",    "points": 25, "wins": 1, "podiums": 1, "poles": 1 },
+    { "position": 2,  "driverId": "antonelli",  "teamId": "mercedes",    "points": 18, "wins": 0, "podiums": 1, "poles": 0 },
+    { "position": 3,  "driverId": "leclerc",    "teamId": "ferrari",     "points": 15, "wins": 0, "podiums": 1, "poles": 0 },
+    { "position": 4,  "driverId": "hamilton",   "teamId": "ferrari",     "points": 12, "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 5,  "driverId": "norris",     "teamId": "mclaren",     "points": 10, "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 6,  "driverId": "verstappen", "teamId": "redbull",     "points": 8,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 7,  "driverId": "bearman",    "teamId": "haas",        "points": 6,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 8,  "driverId": "lindblad",   "teamId": "racingbulls", "points": 4,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 9,  "driverId": "bortoleto",  "teamId": "audi",        "points": 2,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 10, "driverId": "gasly",      "teamId": "alpine",      "points": 1,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 11, "driverId": "ocon",       "teamId": "haas",        "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 12, "driverId": "albon",      "teamId": "williams",    "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 13, "driverId": "lawson",     "teamId": "racingbulls", "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 14, "driverId": "colapinto",  "teamId": "alpine",      "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 15, "driverId": "sainz",      "teamId": "williams",    "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 16, "driverId": "perez",      "teamId": "cadillac",    "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 17, "driverId": "stroll",     "teamId": "astonmartin", "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 18, "driverId": "alonso",     "teamId": "astonmartin", "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 19, "driverId": "bottas",     "teamId": "cadillac",    "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 20, "driverId": "hadjar",     "teamId": "redbull",     "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 21, "driverId": "piastri",    "teamId": "mclaren",     "points": 0,  "wins": 0, "podiums": 0, "poles": 0 },
+    { "position": 22, "driverId": "hulkenberg", "teamId": "audi",        "points": 0,  "wins": 0, "podiums": 0, "poles": 0 }
+  ],
+  "constructorStandings": [
+    { "position": 1,  "teamId": "mercedes",    "points": 43, "wins": 1 },
+    { "position": 2,  "teamId": "ferrari",     "points": 27, "wins": 0 },
+    { "position": 3,  "teamId": "mclaren",     "points": 10, "wins": 0 },
+    { "position": 4,  "teamId": "redbull",     "points": 8,  "wins": 0 },
+    { "position": 5,  "teamId": "racingbulls", "points": 4,  "wins": 0 },
+    { "position": 6,  "teamId": "haas",        "points": 6,  "wins": 0 },
+    { "position": 7,  "teamId": "audi",        "points": 2,  "wins": 0 },
+    { "position": 8,  "teamId": "alpine",      "points": 1,  "wins": 0 },
+    { "position": 9,  "teamId": "astonmartin", "points": 0,  "wins": 0 },
+    { "position": 10, "teamId": "williams",    "points": 0,  "wins": 0 },
+    { "position": 11, "teamId": "cadillac",    "points": 0,  "wins": 0 }
+  ],
+  "raceResults": [
+    {
+      "raceId": "r1",
+      "raceName": "Australian Grand Prix",
+      "officialName": "Formula 1 Qatar Airways Australian Grand Prix 2026",
+      "raceDate": "2026-03-08",
+      "circuit": "Albert Park Circuit",
+      "country": "Australia",
+      "laps": 58,
+      "raceDistance": 306.124,
+      "weather": "Dry",
+      "winner": {
+        "driverId": "russell",
+        "teamId": "mercedes",
+        "time": "1:30:12.456"
+      },
+      "fastestLap": {
+        "driverId": "leclerc",
+        "teamId": "ferrari",
+        "lapTime": "1:19.847",
+        "lap": 51,
+        "notes": "Leclerc set fastest lap but did not score the bonus point as he finished outside top 10 — he finished 3rd, so point goes to P3"
+      },
+      "polePosition": {
+        "driverId": "russell",
+        "teamId": "mercedes",
+        "lapTime": "1:18.518",
+        "notes": "Russell dominant — 0.3s clear of Antonelli, 0.8s clear of 3rd-placed Hadjar"
+      },
+      "podium": [
+        {
+          "position": 1,
+          "driverId": "russell",
+          "teamId": "mercedes",
+          "time": "1:30:12.456",
+          "gap": "",
+          "points": 25,
+          "fastestLap": false,
+          "grid": 1,
+          "status": "Finished"
+        },
+        {
+          "position": 2,
+          "driverId": "antonelli",
+          "teamId": "mercedes",
+          "time": "+2.974s",
+          "gap": "+2.974s",
+          "points": 18,
+          "fastestLap": false,
+          "grid": 2,
+          "status": "Finished"
+        },
+        {
+          "position": 3,
+          "driverId": "leclerc",
+          "teamId": "ferrari",
+          "time": "+15.519s",
+          "gap": "+15.519s",
+          "points": 15,
+          "fastestLap": false,
+          "grid": 4,
+          "status": "Finished"
+        }
+      ],
+      "fullRaceResult": [
+        { "position": 1,  "driverId": "russell",    "teamId": "mercedes",    "time": "1:30:12.456", "gap": "",          "points": 25, "fastestLap": false, "grid": 1,  "laps": 58, "status": "Finished" },
+        { "position": 2,  "driverId": "antonelli",  "teamId": "mercedes",    "time": "+2.974s",     "gap": "+2.974s",   "points": 18, "fastestLap": false, "grid": 2,  "laps": 58, "status": "Finished" },
+        { "position": 3,  "driverId": "leclerc",    "teamId": "ferrari",     "time": "+15.519s",    "gap": "+15.519s",  "points": 15, "fastestLap": false, "grid": 4,  "laps": 58, "status": "Finished" },
+        { "position": 4,  "driverId": "hamilton",   "teamId": "ferrari",     "time": "+16.144s",    "gap": "+16.144s",  "points": 12, "fastestLap": false, "grid": 7,  "laps": 58, "status": "Finished" },
+        { "position": 5,  "driverId": "norris",     "teamId": "mclaren",     "time": "+51.741s",    "gap": "+51.741s",  "points": 10, "fastestLap": false, "grid": 6,  "laps": 58, "status": "Finished" },
+        { "position": 6,  "driverId": "verstappen", "teamId": "redbull",     "time": "+54.617s",    "gap": "+54.617s",  "points": 8,  "fastestLap": false, "grid": 20, "laps": 58, "status": "Finished" },
+        { "position": 7,  "driverId": "bearman",    "teamId": "haas",        "time": "+1 lap",      "gap": "+1 lap",    "points": 6,  "fastestLap": false, "grid": 12, "laps": 57, "status": "Finished" },
+        { "position": 8,  "driverId": "lindblad",   "teamId": "racingbulls", "time": "+1 lap",      "gap": "+1 lap",    "points": 4,  "fastestLap": false, "grid": 9,  "laps": 57, "status": "Finished" },
+        { "position": 9,  "driverId": "bortoleto",  "teamId": "audi",        "time": "+1 lap",      "gap": "+1 lap",    "points": 2,  "fastestLap": false, "grid": 10, "laps": 57, "status": "Finished" },
+        { "position": 10, "driverId": "gasly",      "teamId": "alpine",      "time": "+1 lap",      "gap": "+1 lap",    "points": 1,  "fastestLap": false, "grid": 11, "laps": 57, "status": "Finished" },
+        { "position": 11, "driverId": "ocon",       "teamId": "haas",        "time": "+1 lap",      "gap": "+1 lap",    "points": 0,  "fastestLap": false, "grid": 13, "laps": 57, "status": "Finished" },
+        { "position": 12, "driverId": "albon",      "teamId": "williams",    "time": "+1 lap",      "gap": "+1 lap",    "points": 0,  "fastestLap": false, "grid": 14, "laps": 57, "status": "Finished" },
+        { "position": 13, "driverId": "lawson",     "teamId": "racingbulls", "time": "+1 lap",      "gap": "+1 lap",    "points": 0,  "fastestLap": false, "grid": 8,  "laps": 57, "status": "Finished" },
+        { "position": 14, "driverId": "colapinto",  "teamId": "alpine",      "time": "+2 laps",     "gap": "+2 laps",   "points": 0,  "fastestLap": false, "grid": 15, "laps": 56, "status": "Finished" },
+        { "position": 15, "driverId": "sainz",      "teamId": "williams",    "time": "+2 laps",     "gap": "+2 laps",   "points": 0,  "fastestLap": false, "grid": 21, "laps": 56, "status": "Finished" },
+        { "position": 16, "driverId": "perez",      "teamId": "cadillac",    "time": "+3 laps",     "gap": "+3 laps",   "points": 0,  "fastestLap": false, "grid": 18, "laps": 55, "status": "Finished" },
+        { "position": 17, "driverId": "stroll",     "teamId": "astonmartin", "time": "DNF",         "gap": "DNF",       "points": 0,  "fastestLap": false, "grid": 22, "laps": 40, "status": "DNF — Electrical" },
+        { "position": 18, "driverId": "alonso",     "teamId": "astonmartin", "time": "DNF",         "gap": "DNF",       "points": 0,  "fastestLap": false, "grid": 17, "laps": 35, "status": "DNF — Electrical" },
+        { "position": 19, "driverId": "bottas",     "teamId": "cadillac",    "time": "DNF",         "gap": "DNF",       "points": 0,  "fastestLap": false, "grid": 19, "laps": 16, "status": "DNF — Mechanical" },
+        { "position": 20, "driverId": "hadjar",     "teamId": "redbull",     "time": "DNF",         "gap": "DNF",       "points": 0,  "fastestLap": false, "grid": 3,  "laps": 11, "status": "DNF — Engine" },
+        { "position": 21, "driverId": "piastri",    "teamId": "mclaren",     "time": "DNS",         "gap": "DNS",       "points": 0,  "fastestLap": false, "grid": 5,  "laps": 0,  "status": "DNS — Crashed on reconnaissance lap" },
+        { "position": 22, "driverId": "hulkenberg", "teamId": "audi",        "time": "DNS",         "gap": "DNS",       "points": 0,  "fastestLap": false, "grid": 16, "laps": 0,  "status": "DNS — Mechanical failure before race" }
+      ],
+      "qualifyingResult": [
+        { "position": 1,  "driverId": "russell",    "teamId": "mercedes",    "q1": "1:19.507", "q2": "1:18.934", "q3": "1:18.518" },
+        { "position": 2,  "driverId": "antonelli",  "teamId": "mercedes",    "q1": "1:19.880", "q2": "1:19.201", "q3": "1:18.811" },
+        { "position": 3,  "driverId": "hadjar",     "teamId": "redbull",     "q1": "1:20.102", "q2": "1:19.580", "q3": "1:19.303" },
+        { "position": 4,  "driverId": "leclerc",    "teamId": "ferrari",     "q1": "1:20.210", "q2": "1:19.450", "q3": "1:19.411" },
+        { "position": 5,  "driverId": "piastri",    "teamId": "mclaren",     "q1": "1:20.180", "q2": "1:19.388", "q3": "1:19.436" },
+        { "position": 6,  "driverId": "norris",     "teamId": "mclaren",     "q1": "1:20.280", "q2": "1:19.510", "q3": "1:19.480" },
+        { "position": 7,  "driverId": "hamilton",   "teamId": "ferrari",     "q1": "1:20.350", "q2": "1:19.610", "q3": "1:19.504" },
+        { "position": 8,  "driverId": "lawson",     "teamId": "racingbulls", "q1": "1:20.450", "q2": "1:19.720", "q3": "1:19.722" },
+        { "position": 9,  "driverId": "lindblad",   "teamId": "racingbulls", "q1": "1:20.590", "q2": "1:19.850", "q3": "1:19.890" },
+        { "position": 10, "driverId": "bortoleto",  "teamId": "audi",        "q1": "1:20.680", "q2": "1:19.920", "q3": "DNS — Technical failure at pit lane entry" },
+        { "position": 11, "driverId": "gasly",      "teamId": "alpine",      "q1": "1:20.780", "q2": "1:20.100", "q3": null },
+        { "position": 12, "driverId": "bearman",    "teamId": "haas",        "q1": "1:20.890", "q2": "1:20.190", "q3": null },
+        { "position": 13, "driverId": "albon",      "teamId": "williams",    "q1": "1:21.010", "q2": "1:20.350", "q3": null },
+        { "position": 14, "driverId": "ocon",       "teamId": "haas",        "q1": "1:21.120", "q2": "1:20.480", "q3": null },
+        { "position": 15, "driverId": "colapinto",  "teamId": "alpine",      "q1": "1:21.010", "q2": "1:20.550", "q3": null },
+        { "position": 16, "driverId": "hulkenberg", "teamId": "audi",        "q1": "1:21.350", "q2": null,       "q3": null },
+        { "position": 17, "driverId": "alonso",     "teamId": "astonmartin", "q1": "1:21.460", "q2": null,       "q3": null },
+        { "position": 18, "driverId": "perez",      "teamId": "cadillac",    "q1": "1:22.100", "q2": null,       "q3": null },
+        { "position": 19, "driverId": "bottas",     "teamId": "cadillac",    "q1": "1:22.380", "q2": null,       "q3": null },
+        { "position": 20, "driverId": "verstappen", "teamId": "redbull",     "q1": "DNS — Crashed on first flying lap", "q2": null, "q3": null },
+        { "position": 21, "driverId": "sainz",      "teamId": "williams",    "q1": "DNS — Technical failure in FP3", "q2": null, "q3": null },
+        { "position": 22, "driverId": "stroll",     "teamId": "astonmartin", "q1": "DNS — Technical failure in FP3", "q2": null, "q3": null }
+      ],
+      "keyMoments": [
+        "Russell and Leclerc battled for the lead over the opening 11 laps in a thrilling duel",
+        "Hadjar retired on lap 11 with an engine issue, triggering a VSC — Mercedes pitted, Ferrari stayed out",
+        "Second VSC on lap 16 (Bottas retirement) before Ferrari could pit safely, locking them into a 1-stop",
+        "Russell and Antonelli held on with 46-lap-old hard tyres to complete a dominant Mercedes 1-2",
+        "Piastri crashed heavily on his reconnaissance lap — DNS in his home race",
+        "Verstappen recovered from 20th (Q1 crash) to 6th — stunning recovery drive",
+        "Lindblad scored points on debut — P8 in his first F1 race",
+        "Bortoleto P9 gave Audi their first ever Formula 1 points on debut"
+      ]
+    }
+  ]
+};
+
+    DB.drivers = dData.drivers;
+    DB.teams   = tData.teams;
+    DB.cars    = cData.cars;
+    DB.races   = rData.races;
+    DB.results = resData;
+
+    renderHero();
+    renderTicker();
+    renderAnalytics();
+    renderDrivers();
+    renderCompareSelects();
+    runCompare();
+    renderTeams();
+    renderCars();
+    renderCalendar();
+    renderResults();
+    setTimeout(animateBars, 400);
+  } catch (err) {
+    console.error('APEX error:', err);
+  }
+}
+
+function animateBars() {
+  document.querySelectorAll('.metric-bar[data-w]').forEach(el => {
+    el.style.width = el.dataset.w + '%';
+  });
+}
+
+// ── Hero ─────────────────────────────────────────────────────────
+function renderHero() {
+  const leader = DB.results.driverStandings[0];
+  const d = DB.drivers.find(x => x.id === leader.driverId);
+  document.getElementById('statDrivers').textContent = DB.drivers.length;
+  document.getElementById('statTeams').textContent   = DB.teams.length;
+  document.getElementById('statRaces').textContent   = DB.races.length;
+  document.getElementById('statLeader').textContent  = d ? d.lastName.toUpperCase() : '—';
+}
+
+// ── Ticker ───────────────────────────────────────────────────────
+function renderTicker() {
+  const items = DB.results.driverStandings.slice(0, 12).map(s => {
+    const d = DB.drivers.find(x => x.id === s.driverId);
+    const name = d ? `${d.firstName[0]}. ${d.lastName}` : s.driverId;
+    return `<div class="ticker-item">
+      <span style="font-size:9px;color:var(--muted)">P${s.position}</span>
+      <strong>${name}</strong>
+      <span class="ticker-pts">${s.points} PTS</span>
+    </div>`;
+  }).join('');
+  document.getElementById('tickerTrack').innerHTML = items + items;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ── ANALYTICS CHARTS ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderAnalytics() {
+  buildDriverPtsChart();
+  buildConstructorChart();
+  buildCarPerfChart();
+  buildRadarSection();
+  buildCarMetricFilter();
+}
+
+// Chart helper: destroy old chart before rebuilding
+function destroyChart(key) {
+  if (CHARTS[key]) { CHARTS[key].destroy(); delete CHARTS[key]; }
+}
+
+/* ── 1. Driver Points Bar Chart ── */
+function buildDriverPtsChart() {
+  destroyChart('driverPts');
+  const standings = DB.results.driverStandings.filter(s => s.points > 0);
+  const labels = standings.map(s => {
+    const d = DB.drivers.find(x => x.id === s.driverId);
+    return d ? d.lastName : s.driverId;
+  });
+  const data   = standings.map(s => s.points);
+  const colors = standings.map(s => tc(s.teamId));
+  const ctx    = document.getElementById('chartDriverPts').getContext('2d');
+  CHARTS.driverPts = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Points',
+        data,
+        backgroundColor: colors.map(c => c + 'CC'),
+        borderColor: colors,
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${ctx.parsed.y} PTS` }
+      }},
+      scales: {
+        x: { ticks: { color: '#A8B8C8', font: { size: 10 } }, grid: { color: '#1A2030' } },
+        y: { ticks: { color: '#4A5568' }, grid: { color: '#1A2030' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+/* ── 2. Constructor Standings Horizontal Bar Chart ── */
+function buildConstructorChart() {
+  destroyChart('constructors');
+  const sorted = [...DB.results.constructorStandings].sort((a,b) => b.points - a.points);
+  const labels = sorted.map(s => {
+    const t = DB.teams.find(x => x.id === s.teamId);
+    return t ? t.shortName : s.teamId;
+  });
+  const data   = sorted.map(s => s.points);
+  const colors = sorted.map(s => tc(s.teamId));
+  const ctx    = document.getElementById('chartConstructors').getContext('2d');
+  CHARTS.constructors = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Points',
+        data,
+        backgroundColor: colors.map(c => c + 'CC'),
+        borderColor: colors,
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#4A5568' }, grid: { color: '#1A2030' }, beginAtZero: true },
+        y: { ticks: { color: '#A8B8C8', font: { size: 11 } }, grid: { color: '#1A2030' } }
+      }
+    }
+  });
+}
+
+/* ── 3. Car Performance Comparison Chart ── */
+const CAR_METRIC_KEYS = [
+  { key: 'topSpeed',            label: 'Top Speed' },
+  { key: 'powerUnitDeployment', label: 'PU Deployment' },
+  { key: 'downforce',           label: 'Downforce' },
+  { key: 'cornering',           label: 'Cornering' },
+  { key: 'tyreManagement',      label: 'Tyre Mgmt' },
+  { key: 'dragEfficiency',      label: 'Drag Efficiency' },
+];
+
+function buildCarMetricFilter() {
+  const bar = document.getElementById('carMetricFilter');
+  bar.innerHTML = CAR_METRIC_KEYS.map(m =>
+    `<button class="filter-btn ${m.key === carMetric ? 'active' : ''}"
+      onclick="setCarMetric('${m.key}', this)">${m.label}</button>`
+  ).join('');
+}
+
+window.setCarMetric = function(key, btn) {
+  carMetric = key;
+  document.querySelectorAll('#carMetricFilter .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildCarPerfChart();
+};
+
+function buildCarPerfChart() {
+  destroyChart('carPerf');
+  const metric  = CAR_METRIC_KEYS.find(m => m.key === carMetric) || CAR_METRIC_KEYS[0];
+  const sorted  = [...DB.cars].sort((a,b) => (b.metrics?.[carMetric]||0) - (a.metrics?.[carMetric]||0));
+  const labels  = sorted.map(c => c.name);
+  const data    = sorted.map(c => c.metrics?.[carMetric] || 0);
+  const colors  = sorted.map(c => tc(c.team));
+  const ctx     = document.getElementById('chartCarPerf').getContext('2d');
+  CHARTS.carPerf = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: metric.label,
+        data,
+        backgroundColor: colors.map(c => c + 'BB'),
+        borderColor: colors,
+        borderWidth: 1,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#A8B8C8', font: { size: 10 }, maxRotation: 30 }, grid: { color: '#1A2030' } },
+        y: { ticks: { color: '#4A5568' }, grid: { color: '#1A2030' }, min: 75, max: 100 }
+      }
+    }
+  });
+}
+
+/* ── 4. Radar Section: top 3 drivers ── */
+function buildRadarSection() {
+  const section = document.getElementById('radarSection');
+  const top3    = DB.results.driverStandings.slice(0, 3);
+  section.innerHTML = top3.map((s, i) => {
+    const d = DB.drivers.find(x => x.id === s.driverId);
+    if (!d) return '';
+    return `<div class="chart-card">
+      <div class="chart-title">${d.firstName} ${d.lastName}</div>
+      <div class="chart-sub">Driver DNA — P${s.position} · ${s.points} PTS</div>
+      <div class="chart-wrap short"><canvas id="radar_${d.id}"></canvas></div>
+    </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    top3.forEach(s => {
+      const d = DB.drivers.find(x => x.id === s.driverId);
+      if (!d || !d.ratings) return;
+      buildRadarChart(`radar_${d.id}`, d);
+    });
+  }, 50);
+}
+
+function buildRadarChart(canvasId, driver) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  destroyChart(canvasId);
+  const r   = driver.ratings || {};
+  const color = tc(driver.team);
+  CHARTS[canvasId] = new Chart(ctx.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: ['Qualifying', 'Race Pace', 'Tyre Mgmt', 'Wet Weather', 'Consistency', 'Aggression'],
+      datasets: [{
+        label: driver.lastName,
+        data: [r.qualifying||0, r.racePace||0, r.tyreManagement||0, r.wetWeather||0, r.consistency||0, r.aggression||0],
+        backgroundColor: color + '22',
+        borderColor: color,
+        borderWidth: 2,
+        pointBackgroundColor: color,
+        pointRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 70, max: 100,
+          ticks: { display: false, stepSize: 10 },
+          grid: { color: '#1A2030' },
+          angleLines: { color: '#1A2030' },
+          pointLabels: { color: '#A8B8C8', font: { size: 9 } }
+        }
+      }
+    }
+  });
+}
+
+// ── Compare radar ────────────────────────────────────────────────
+function buildCompareRadar(dA, dB) {
+  destroyChart('radarCompare');
+  const ctx = document.getElementById('chartRadarCompare');
+  if (!ctx) return;
+  const rA = dA.ratings || {};
+  const rB = dB.ratings || {};
+  const dims = ['Qualifying','Race Pace','Tyre Mgmt','Wet Weather','Consistency','Aggression'];
+  const keysA = [rA.qualifying||0, rA.racePace||0, rA.tyreManagement||0, rA.wetWeather||0, rA.consistency||0, rA.aggression||0];
+  const keysB = [rB.qualifying||0, rB.racePace||0, rB.tyreManagement||0, rB.wetWeather||0, rB.consistency||0, rB.aggression||0];
+  const cA = tc(dA.team), cB = tc(dB.team);
+  CHARTS.radarCompare = new Chart(ctx.getContext('2d'), {
+    type: 'radar',
+    data: {
+      labels: dims,
+      datasets: [
+        { label: dA.lastName, data: keysA, backgroundColor: cA+'22', borderColor: cA, borderWidth: 2, pointBackgroundColor: cA, pointRadius: 3 },
+        { label: dB.lastName, data: keysB, backgroundColor: cB+'22', borderColor: cB, borderWidth: 2, pointBackgroundColor: cB, pointRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: '#A8B8C8', font: { size: 11 }, boxWidth: 12, padding: 16 }
+        }
+      },
+      scales: {
+        r: {
+          min: 70, max: 100,
+          ticks: { display: false },
+          grid: { color: '#1A2030' },
+          angleLines: { color: '#1A2030' },
+          pointLabels: { color: '#A8B8C8', font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// ── DRIVER COMPARE TOOL ──────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderCompareSelects() {
+  const opts = DB.drivers.map(d => {
+    const t = DB.teams.find(x => x.id === d.team);
+    return `<option value="${d.id}">${d.firstName} ${d.lastName} — ${t ? t.shortName : d.team}</option>`;
+  }).join('');
+  document.getElementById('cmpA').innerHTML = opts;
+  document.getElementById('cmpB').innerHTML = opts;
+  // Default: compare P1 vs P2
+  const s = DB.results.driverStandings;
+  if (s.length >= 2) {
+    document.getElementById('cmpA').value = s[0].driverId;
+    document.getElementById('cmpB').value = s[1].driverId;
+  }
+}
+
+window.runCompare = function() {
+  const idA = document.getElementById('cmpA').value;
+  const idB = document.getElementById('cmpB').value;
+  const dA  = DB.drivers.find(d => d.id === idA);
+  const dB  = DB.drivers.find(d => d.id === idB);
+  if (!dA || !dB) return;
+
+  const sA = DB.results.driverStandings.find(s => s.driverId === idA) || {};
+  const sB = DB.results.driverStandings.find(s => s.driverId === idB) || {};
+
+  const STATS = [
+    { key: 'Championships', vA: dA.careerStats?.worldTitles   || 0, vB: dB.careerStats?.worldTitles   || 0 },
+    { key: 'Career Wins',   vA: dA.careerStats?.wins          || 0, vB: dB.careerStats?.wins          || 0 },
+    { key: 'Career Poles',  vA: dA.careerStats?.poles         || 0, vB: dB.careerStats?.poles         || 0 },
+    { key: 'Podiums',       vA: dA.careerStats?.podiums       || 0, vB: dB.careerStats?.podiums       || 0 },
+    { key: 'Races Entered', vA: dA.careerStats?.racesEntered  || 0, vB: dB.careerStats?.racesEntered  || 0 },
+    { key: '2026 Points',   vA: sA.points || 0,                     vB: sB.points || 0 },
+    { key: '2026 Position', vA: sA.position || '—',                 vB: sB.position || '—', lower: true },
+  ];
+
+  const teamA = DB.teams.find(t => t.id === dA.team);
+  const teamB = DB.teams.find(t => t.id === dB.team);
+
+  function statRow(stat) {
+    const numA = parseFloat(stat.vA), numB = parseFloat(stat.vB);
+    let wA = false, wB = false;
+    if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+      if (stat.lower) { wA = numA < numB; wB = numB < numA; }
+      else            { wA = numA > numB; wB = numB > numA; }
+    }
+    return `<div class="compare-stat-row">
+      <div class="compare-stat-key">${stat.key}</div>
+      <div style="display:flex;gap:24px">
+        <div class="compare-stat-val ${wA?'compare-winner':''}">${stat.vA}</div>
+        <div class="compare-stat-val ${wB?'compare-winner':''}">${stat.vB}</div>
+      </div>
+    </div>`;
+  }
+
+  const colorA = tc(dA.team), colorB = tc(dB.team);
+  document.getElementById('compareResult').innerHTML = `
+    <div class="compare-result">
+      <div class="compare-col" style="border-top:2px solid ${colorA}">
+        <div class="compare-driver-name" style="color:${colorA}">${dA.firstName} ${dA.lastName}</div>
+        <div class="compare-driver-team">${teamA ? teamA.shortName : dA.team} · #${dA.number}</div>
+        ${STATS.map(s => {
+          const numA = parseFloat(s.vA), numB = parseFloat(s.vB);
+          const win  = !isNaN(numA) && !isNaN(numB) && numA !== numB && (s.lower ? numA < numB : numA > numB);
+          return `<div class="compare-stat-row">
+            <div class="compare-stat-key">${s.key}</div>
+            <div class="compare-stat-val ${win ? 'compare-winner' : ''}">${s.vA}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="compare-col" style="border-top:2px solid ${colorB}">
+        <div class="compare-driver-name" style="color:${colorB}">${dB.firstName} ${dB.lastName}</div>
+        <div class="compare-driver-team">${teamB ? teamB.shortName : dB.team} · #${dB.number}</div>
+        ${STATS.map(s => {
+          const numA = parseFloat(s.vA), numB = parseFloat(s.vB);
+          const win  = !isNaN(numA) && !isNaN(numB) && numA !== numB && (s.lower ? numB < numA : numB > numA);
+          return `<div class="compare-stat-row">
+            <div class="compare-stat-key">${s.key}</div>
+            <div class="compare-stat-val ${win ? 'compare-winner' : ''}">${s.vB}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  buildCompareRadar(dA, dB);
+};
+
+// ════════════════════════════════════════════════════════════════
+// ── DRIVERS SECTION ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderDrivers(filter = 'all') {
+  driverFilter = filter;
+  const teamIds = [...new Set(DB.drivers.map(d => d.team))].sort();
+  const grid    = document.getElementById('driverGrid');
+  const count   = document.getElementById('driverCount');
+  const bar     = document.getElementById('driverFilters');
+
+  bar.innerHTML =
+    `<button class="filter-btn ${filter==='all'?'active':''}" onclick="renderDrivers('all')">All Drivers</button>` +
+    teamIds.map(tid => {
+      const t   = DB.teams.find(x => x.id === tid);
+      const cls = filter === tid ? 'active' : '';
+      return `<button class="filter-btn ${cls}" onclick="renderDrivers('${tid}')"
+        style="${cls ? `color:${tc(tid)};border-color:${tc(tid)};background:${tc(tid)}18` : ''}"
+      >${t ? t.shortName : tid}</button>`;
+    }).join('');
+
+  const visible = filter === 'all' ? DB.drivers : DB.drivers.filter(d => d.team === filter);
+  count.textContent = `${visible.length} drivers`;
+
+  grid.innerHTML = visible.map(d => {
+    const s    = DB.results.driverStandings.find(x => x.driverId === d.id);
+    const pos  = s ? s.position : '—';
+    const pts  = s ? s.points   : 0;
+    const color = tc(d.team);
+    const t     = DB.teams.find(x => x.id === d.team);
+    return `<div class="driver-card" style="--tc:${color}">
+      <div class="driver-card-num">${d.number}</div>
+      <div class="driver-flag">${d.flag || ''}</div>
+      <div class="driver-card-name">
+        <span class="driver-card-first">${d.firstName}</span>${d.lastName}
+      </div>
+      <div class="driver-card-team">${t ? t.shortName : d.team}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="driver-pts-badge"><span class="driver-pts-label">PTS</span> ${pts}</div>
+        <div class="driver-pos-badge">P${pos}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ── TEAMS ────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderTeams() {
+  const grid   = document.getElementById('teamGrid');
+  const count  = document.getElementById('teamCount');
+  const sorted = [...DB.teams].sort((a,b) => a.season2026.position - b.season2026.position);
+  count.textContent = `${sorted.length} constructors`;
+  grid.innerHTML = sorted.map(t => {
+    const color   = tc(t.id);
+    const drivers = t.drivers.map(did => {
+      const d = DB.drivers.find(x => x.id === did);
+      return d ? `<div class="team-driver-chip">#${d.number} ${d.lastName}</div>` : '';
+    }).join('');
+    return `<div class="team-card" style="--tc:${color}">
+      <div class="team-accent"></div>
+      <div class="team-card-inner">
+        <div class="team-card-head">
+          <div>
+            <div class="team-card-name">${t.shortName}</div>
+            <div class="team-card-chassis">${t.chassis || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="team-pos-n" style="color:${color}">P${t.season2026.position}</div>
+            <div class="team-pos-l">Constructor</div>
+          </div>
+        </div>
+        <div class="team-detail-row"><span class="team-detail-key">Engine</span><span class="team-detail-val">${t.engineSupplier}</span></div>
+        <div class="team-detail-row"><span class="team-detail-key">Team Principal</span><span class="team-detail-val">${t.teamPrincipal}</span></div>
+        <div class="team-detail-row"><span class="team-detail-key">HQ</span><span class="team-detail-val">${t.headquarters}</span></div>
+        <div class="team-detail-row">
+          <span class="team-detail-key">2026 Points</span>
+          <span class="team-pts-big">${t.season2026.points}</span>
+        </div>
+        <div class="team-drivers-row">${drivers}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ── CARS ─────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderCars() {
+  const grid  = document.getElementById('carGrid');
+  const count = document.getElementById('carCount');
+  count.textContent = `${DB.cars.length} chassis`;
+
+  const METRIC_KEYS = [
+    ['topSpeed',           'Top Speed'],
+    ['powerUnitDeployment','PU Deployment'],
+    ['downforce',          'Downforce'],
+    ['cornering',          'Cornering'],
+    ['tyreManagement',     'Tyre Mgmt'],
+    ['dragEfficiency',     'Drag Efficiency'],
+  ];
+
+  grid.innerHTML = DB.cars.map(car => {
+    const color = tc(car.team);
+    const t     = DB.teams.find(x => x.id === car.team);
+    const bars  = METRIC_KEYS.map(([key, label]) => {
+      const val = car.metrics?.[key] || 0;
+      return `<div class="metric-row">
+        <div class="metric-label">${label}</div>
+        <div class="metric-bar-wrap">
+          <div class="metric-bar" data-w="${val}" style="width:0;background:${color}"></div>
+        </div>
+        <div class="metric-val">${val}</div>
+      </div>`;
+    }).join('');
+    return `<div class="car-card" style="--tc:${color}">
+      <div class="car-accent"></div>
+      <div class="car-card-inner">
+        <div class="car-name-head">
+          <div>
+            <div class="car-name">${car.name}</div>
+            <div class="car-team-name">${t ? t.shortName : car.team}</div>
+            <div class="car-engine-badge">${car.engine || ''}</div>
+          </div>
+        </div>
+        <div class="car-metrics">${bars}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ── CALENDAR ─────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderCalendar(filter) {
+  if (filter !== undefined) calFilter = filter;
+  const list  = document.getElementById('calendarList');
+  const count = document.getElementById('raceCount');
+  const completed = DB.races.filter(r => r.status === 'completed');
+  const nextRace  = DB.races.find(r => r.status === 'upcoming');
+  count.textContent = `${DB.races.length} rounds · ${completed.length} completed`;
+
+  let visible = DB.races;
+  if (calFilter === 'completed') visible = DB.races.filter(r => r.status === 'completed');
+  else if (calFilter === 'upcoming') visible = DB.races.filter(r => r.status !== 'completed');
+  else if (calFilter === 'sprint')   visible = DB.races.filter(r => r.sprint);
+
+  list.innerHTML = visible.map(race => {
+    const isNext = race === nextRace;
+    const isDone = race.status === 'completed';
+    const cls    = `${isDone ? 'completed' : ''} ${isNext ? 'is-next' : ''}`.trim();
+    const dates  = race.schedule?.weekendDates || '';
+    const status = isDone  ? '<span class="race-status-chip done">Completed</span>'
+                 : isNext  ? '<span class="race-status-chip next">▶ Next Race</span>'
+                 :           '<span class="race-status-chip upcoming">Scheduled</span>';
+    const sprint = race.sprint ? '<span class="sprint-tag">SPRINT</span>' : '';
+    return `<div class="race-row ${cls}">
+      <div class="race-round">R${race.round}</div>
+      <div class="race-info">
+        <div class="race-name">${race.name}${sprint}</div>
+        <div class="race-circuit">${race.circuit?.name || ''}</div>
+      </div>
+      <div class="race-date-col">${dates}</div>
+      <div class="race-flag">${race.flag || ''}</div>
+      ${status}
+    </div>`;
+  }).join('');
+}
+
+window.showCalTab = function(filter, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar(filter);
+};
+
+// ════════════════════════════════════════════════════════════════
+// ── RESULTS ──────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+function renderResults() {
+  const el  = document.getElementById('resultsContent');
+  const res = DB.results;
+  if (!res?.raceResults?.length) {
+    el.innerHTML = '<div class="loader-text" style="padding:32px;text-align:center">No race results yet</div>';
+    return;
+  }
+
+  const race  = res.raceResults[0];
+  const winD  = DB.drivers.find(d => d.id === race.winner.driverId);
+
+  let html = `<div class="results-header-bar">
+    <div>
+      <div class="results-race-name">${race.raceName}</div>
+      <div class="results-meta">${race.raceDate} · ${race.circuit} · ${race.laps} laps · ${race.weather}</div>
+    </div>
+    <div class="results-winner-chip">
+      <span>Race Winner</span>
+      <strong>${winD ? winD.firstName + ' ' + winD.lastName : race.winner.driverId}</strong>
+    </div>
+  </div>`;
+
+  // Podium
+  const medals = ['🥇','🥈','🥉'];
+  html += `<div class="podium-row">`;
+  race.podium.forEach((p, i) => {
+    const d  = DB.drivers.find(x => x.id === p.driverId);
+    const t  = DB.teams.find(x => x.id === p.teamId);
+    html += `<div class="podium-card p${i+1}">
+      <div class="podium-pos-bg">P${i+1}</div>
+      <div class="podium-medal">${medals[i]}</div>
+      <div class="podium-driver-name">${d ? d.firstName + ' ' + d.lastName : p.driverId}</div>
+      <div class="podium-team">${t ? t.shortName : p.teamId}</div>
+      <div class="podium-gap">${p.gap || p.time}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Full classification
+  html += `<table class="race-table"><thead><tr>
+    <th>POS</th><th>DRIVER</th><th>TEAM</th><th>GRID</th><th>GAP</th><th>PTS</th>
+  </tr></thead><tbody>`;
+  race.fullRaceResult.forEach(row => {
+    const d     = DB.drivers.find(x => x.id === row.driverId);
+    const t     = DB.teams.find(x => x.id === row.teamId);
+    const isDNF = row.status?.startsWith('DNF') || row.status?.startsWith('DNS');
+    const posCls = row.position <= 3 ? 'pos-cell top3' : 'pos-cell';
+    const gapHTML = isDNF
+      ? `<span class="dnf-cell">${row.status}</span>`
+      : `<span class="gap-cell">${row.gap || row.time}</span>`;
+    const fl = row.fastestLap ? '<span class="fl-badge">FL</span>' : '';
+    const pts = row.points > 0 ? `<span class="points-cell">${row.points}</span>` : `<span class="gap-cell">—</span>`;
+    html += `<tr>
+      <td class="${posCls}">${isDNF ? '—' : row.position}</td>
+      <td><div class="driver-name-cell">${d ? d.firstName + ' ' + d.lastName : row.driverId}${fl}</div></td>
+      <td class="team-cell">${t ? t.shortName : row.teamId}</td>
+      <td class="grid-pos">${row.grid || '—'}</td>
+      <td>${gapHTML}</td>
+      <td>${pts}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Standings tables
+  html += `<div class="standing-table">`;
+
+  html += `<div class="standing-section"><h3>Drivers Championship</h3>`;
+  res.driverStandings.forEach(s => {
+    const d  = DB.drivers.find(x => x.id === s.driverId);
+    const t  = DB.teams.find(x => x.id === s.teamId);
+    const rc = s.position <= 3 ? `r${s.position}` : '';
+    html += `<div class="standing-row">
+      <div class="s-rank ${rc}">${s.position}</div>
+      <div class="team-dot" style="background:${tc(s.teamId)}"></div>
+      <div><div class="s-name">${d ? d.firstName + ' ' + d.lastName : s.driverId}</div>
+           <div class="s-team">${t ? t.shortName : s.teamId}</div></div>
+      <div class="s-pts">${s.points}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="standing-section"><h3>Constructors Championship</h3>`;
+  res.constructorStandings.forEach(s => {
+    const t  = DB.teams.find(x => x.id === s.teamId);
+    const rc = s.position <= 3 ? `r${s.position}` : '';
+    html += `<div class="standing-row">
+      <div class="s-rank ${rc}">${s.position}</div>
+      <div class="team-dot" style="background:${tc(s.teamId)}"></div>
+      <div><div class="s-name">${t ? t.shortName : s.teamId}</div>
+           <div class="s-team">${t ? t.engineSupplier : ''}</div></div>
+      <div class="s-pts">${s.points}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  el.innerHTML = html;
+  requestAnimationFrame(animateBars);
+}
+
+// ── Start ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>
+</html>
