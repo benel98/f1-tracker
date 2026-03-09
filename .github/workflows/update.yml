@@ -1,17 +1,15 @@
-name: 🏎️ F1 2026 Daily Update
+name: F1 2026 Daily Update
 
 on:
   schedule:
-    # Every day at 06:00 UTC (good timing — most races are Sunday, results appear by Monday morning)
     - cron: "0 6 * * *"
-  # Also allow manual trigger from GitHub UI
   workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # needed to commit the updated HTML
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -25,24 +23,16 @@ jobs:
       - name: Run F1 updater
         run: python update_f1.py
 
-      - name: Commit & push if changed
+      - name: Commit and push if changed
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add f1-2026-standalone.html
-          # Only commit if there are actual changes
           if git diff --cached --quiet; then
-            echo "No changes detected — standings unchanged since last run."
+            echo "No changes detected - standings unchanged since last run."
           else
-            RACE_COUNT=$(python - <<'EOF'
-import re, sys
-html = open("f1-2026-standalone.html").read()
-m = re.search(r'"completed"', html)
-races = len(re.findall(r'"status":\s*"completed"', html))
-print(f"Update standings · {races} races completed")
-EOF
-            )
-            git commit -m "🏎️ $RACE_COUNT [skip ci]"
+            RACES=$(python -c "import re; html=open('f1-2026-standalone.html').read(); print(len(re.findall(r'\"status\":\s*\"completed\"', html)))")
+            git commit -m "Update F1 standings - ${RACES} races completed [skip ci]"
             git push
-            echo "✅ Changes committed and pushed."
+            echo "Changes committed and pushed."
           fi
