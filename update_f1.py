@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 WIKI_URL = "https://en.wikipedia.org/w/api.php?action=parse&page=2026_Formula_One_World_Championship&prop=wikitext&format=json"
-HTML_FILE = Path("f1-2026-standalone.html")
+HTML_FILE = Path("index.html")
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
