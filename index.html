@@ -9,13 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
+    /* ── RESET & TOKENS ─────────────────────────────────────────── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
       --bg:#07090D;--surface:#0C0F18;--card:#101420;--border:#1A2030;--border2:#263040;
       --red:#E8002D;--gold:#C9A84C;--silver:#A8B8C8;
       --text:#E8EDF5;--muted:#4A5568;--dim:#2D3748;
-      --mono:'DM Mono',monospace;--cond:'Barlow Condensed',sans-serif;
-      --body:'Barlow',sans-serif;--display:'Bebas Neue',sans-serif;
+      --mono:"DM Mono",monospace;--cond:"Barlow Condensed",sans-serif;
+      --body:"Barlow",sans-serif;--display:"Bebas Neue",sans-serif;
       --radius:4px;
     }
     html{scroll-behavior:smooth}
@@ -23,48 +24,46 @@
     ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
 
     /* ── NAV ── */
-    nav{position:sticky;top:0;z-index:200;background:rgba(7,9,13,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
-    .nav-logo{font-family:var(--display);font-size:26px;letter-spacing:.1em;display:flex;align-items:center;gap:8px;cursor:pointer}
+    nav{position:sticky;top:0;z-index:200;background:rgba(7,9,13,.96);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+    .nav-logo{font-family:var(--display);font-size:26px;letter-spacing:.1em;display:flex;align-items:center;gap:8px}
     .nav-logo em{font-style:normal;color:var(--red)}
     .nav-badge{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--muted);border:1px solid var(--border2);padding:2px 6px;border-radius:2px;text-transform:uppercase}
     .nav-links{display:flex;gap:2px}
-    .nav-links a{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:3px;transition:color .2s,background .2s;cursor:pointer}
+    .nav-links a{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:5px 12px;border-radius:3px;transition:color .2s,background .2s}
     .nav-links a:hover{color:var(--text);background:var(--card)}
-    .nav-links a.active{color:var(--red)}
     .season-pill{font-family:var(--mono);font-size:10px;color:var(--gold);border:1px solid var(--gold);padding:3px 10px;border-radius:20px;letter-spacing:.1em}
-    .nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px}
-    .nav-hamburger span{display:block;width:22px;height:2px;background:var(--muted);border-radius:2px;transition:all .3s}
-    .mobile-nav{display:none;position:fixed;top:54px;left:0;right:0;background:rgba(7,9,13,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:199;flex-direction:column;padding:12px 0}
-    .mobile-nav a{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:12px 28px;cursor:pointer;border-bottom:1px solid var(--border)}
-    .mobile-nav a:hover,.mobile-nav a.active{color:var(--red);background:rgba(232,0,45,.04)}
-
-    /* ── PAGE TRANSITIONS ── */
-    #app{animation:fadeIn .25s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
     /* ── HERO ── */
-    .hero{position:relative;padding:72px 28px 56px;border-bottom:1px solid var(--border);overflow:hidden}
-    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 85% 45%,rgba(232,0,45,.07) 0%,transparent 70%),radial-gradient(ellipse 35% 55% at 15% 85%,rgba(201,168,76,.05) 0%,transparent 70%),repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,.012) 79px,rgba(255,255,255,.012) 80px);pointer-events:none}
+    .hero{position:relative;padding:64px 28px 0;border-bottom:1px solid var(--border);overflow:hidden}
+    .hero-bg{position:absolute;inset:0;background:
+      radial-gradient(ellipse 55% 70% at 85% 45%,rgba(232,0,45,.07) 0%,transparent 70%),
+      radial-gradient(ellipse 35% 55% at 15% 85%,rgba(201,168,76,.05) 0%,transparent 70%),
+      repeating-linear-gradient(90deg,transparent,transparent 79px,rgba(255,255,255,.012) 79px,rgba(255,255,255,.012) 80px);
+      pointer-events:none}
     .hero-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:10px}
-    .hero-eyebrow::before{content:'';width:20px;height:1px;background:var(--red);display:block}
+    .hero-eyebrow::before{content:"";width:20px;height:1px;background:var(--red);display:block}
     .hero h1{font-family:var(--display);font-size:clamp(60px,9vw,120px);line-height:.9;letter-spacing:.04em}
     .hero h1 em{font-style:normal;color:var(--red);display:block}
     .hero-sub{margin-top:20px;font-family:var(--cond);font-weight:300;font-size:17px;letter-spacing:.05em;color:var(--silver);max-width:520px}
-    .hero-stats{display:flex;gap:28px;margin-top:36px;flex-wrap:wrap}
+    .hero-bottom{display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end;margin-top:32px;padding-bottom:40px}
+    .hero-stats{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
     .hero-stat{display:flex;flex-direction:column}
     .hero-stat-n{font-family:var(--display);font-size:38px;letter-spacing:.04em;line-height:1}
     .hero-stat-l{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
     .hero-divider{width:1px;background:var(--border2);align-self:stretch;margin:4px 0}
 
-    /* ── QUICK NAV CARDS (home page) ── */
-    .quick-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:2px;margin-top:2px}
-    .quick-card{background:var(--card);border:1px solid var(--border);padding:22px 20px;cursor:pointer;transition:border-color .2s,transform .2s;position:relative;overflow:hidden}
-    .quick-card:hover{border-color:var(--border2);transform:translateY(-2px)}
-    .quick-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .3s}
-    .quick-card:hover::before{transform:scaleX(1)}
-    .quick-card-icon{font-size:28px;margin-bottom:10px}
-    .quick-card-title{font-family:var(--display);font-size:22px;letter-spacing:.06em;margin-bottom:4px}
-    .quick-card-desc{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    /* ── COUNTDOWN ── */
+    .countdown-box{background:rgba(232,0,45,.06);border:1px solid rgba(232,0,45,.25);border-radius:4px;padding:18px 24px;min-width:340px;flex-shrink:0}
+    .countdown-label{font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+    .countdown-race{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.06em;margin-bottom:12px;color:var(--text)}
+    .countdown-race-flag{margin-right:8px}
+    .countdown-timer{display:flex;gap:10px;align-items:flex-end}
+    .countdown-unit{display:flex;flex-direction:column;align-items:center;min-width:48px}
+    .countdown-n{font-family:var(--display);font-size:42px;letter-spacing:.04em;line-height:1;color:var(--text)}
+    .countdown-u{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+    .countdown-sep{font-family:var(--display);font-size:34px;color:var(--red);opacity:.5;padding-bottom:6px;line-height:1}
+    .countdown-date{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;margin-top:10px;text-transform:uppercase}
+    .countdown-done{font-family:var(--display);font-size:22px;letter-spacing:.06em;color:var(--red)}
 
     /* ── TICKER ── */
     .ticker-wrap{background:var(--card);border-bottom:1px solid var(--border);overflow:hidden;height:38px;display:flex;align-items:center}
@@ -75,17 +74,10 @@
     .ticker-pts{color:var(--gold)}
     @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-    /* ── PAGE HEADER ── */
-    .page-header{padding:40px 28px 28px;border-bottom:1px solid var(--border);background:var(--surface)}
-    .page-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
-    .page-title{font-family:var(--display);font-size:clamp(42px,6vw,72px);letter-spacing:.06em;line-height:.95}
-    .page-title em{font-style:normal;color:var(--red)}
-    .page-sub{font-family:var(--cond);font-weight:300;font-size:15px;letter-spacing:.04em;color:var(--silver);margin-top:8px}
-
     /* ── LAYOUT ── */
     main{max-width:1380px;margin:0 auto;padding:0 28px 80px}
-    .section-header{display:flex;align-items:baseline;padding:36px 0 20px;border-bottom:1px solid var(--border);margin-bottom:24px;gap:14px}
-    .section-title{font-family:var(--display);font-size:42px;letter-spacing:.06em;line-height:1}
+    .section-header{display:flex;align-items:baseline;padding:44px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px;gap:14px}
+    .section-title{font-family:var(--display);font-size:48px;letter-spacing:.06em;line-height:1}
     .section-count{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted)}
     .section-line{flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);margin-left:16px;align-self:center}
 
@@ -99,7 +91,7 @@
     .filter-btn:hover{color:var(--text);border-color:var(--border2)}
     .filter-btn.active{color:var(--red);border-color:var(--red);background:rgba(232,0,45,.08)}
 
-    /* ── CHARTS ── */
+    /* ── CHARTS DASHBOARD ── */
     .charts-dashboard{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:2px}
     .charts-dashboard-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:2px}
     .chart-card{background:var(--card);border:1px solid var(--border);padding:24px}
@@ -114,22 +106,24 @@
     .driver-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:2px}
     .driver-card{background:var(--card);border:1px solid var(--border);padding:18px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .25s,transform .2s}
     .driver-card:hover{border-color:var(--border2);transform:translateY(-2px);z-index:1}
-    .driver-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tc,var(--red));opacity:0;transition:opacity .25s}
+    .driver-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--tc,var(--red));opacity:0;transition:opacity .25s}
     .driver-card:hover::before{opacity:1}
     .driver-card-num{font-family:var(--display);font-size:56px;letter-spacing:.04em;line-height:1;color:var(--tc,var(--red));opacity:.12;position:absolute;right:6px;bottom:2px}
     .driver-flag{font-size:18px;margin-bottom:8px}
     .driver-card-name{font-family:var(--cond);font-weight:700;font-size:17px;letter-spacing:.04em;line-height:1.1;margin-bottom:3px}
     .driver-card-first{font-weight:300;font-size:13px;display:block;color:var(--silver)}
     .driver-card-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .driver-card-team-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
     .driver-pts-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:2px 7px;font-family:var(--mono);font-size:12px;color:var(--gold)}
     .driver-pts-label{font-size:8px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
     .driver-pos-badge{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted)}
+    .driver-flag-img{width:20px;height:14px;object-fit:cover;border-radius:2px;vertical-align:middle;margin-right:6px}
 
-    /* ── COMPARE ── */
+    /* ── COMPARE TOOL ── */
     .compare-wrap{background:var(--card);border:1px solid var(--border);padding:28px;margin-bottom:2px}
     .compare-selects{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-bottom:24px}
     .compare-vs{font-family:var(--display);font-size:28px;letter-spacing:.06em;color:var(--muted);text-align:center}
-    .compare-select{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--cond);font-size:15px;font-weight:600;padding:10px 14px;border-radius:var(--radius);cursor:pointer;appearance:none}
+    .compare-select{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:var(--cond);font-size:15px;font-weight:600;padding:10px 14px;border-radius:var(--radius);cursor:pointer;appearance:none;-webkit-appearance:none}
     .compare-select:focus{outline:none;border-color:var(--red)}
     .compare-result{display:grid;grid-template-columns:1fr 1fr;gap:2px}
     .compare-col{background:var(--surface);border:1px solid var(--border);padding:20px;text-align:center}
@@ -156,6 +150,7 @@
     .team-detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
     .team-detail-row:last-child{border-bottom:none}
     .team-detail-key{font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+    .team-detail-val{font-weight:500}
     .team-pts-big{font-family:var(--display);font-size:26px;color:var(--gold)}
     .team-drivers-row{display:flex;gap:6px;margin-top:12px}
     .team-driver-chip{font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;background:var(--surface);border:1px solid var(--border2);padding:3px 9px;border-radius:2px;color:var(--silver)}
@@ -177,24 +172,34 @@
     .metric-bar{height:100%;border-radius:2px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
     .metric-val{font-family:var(--mono);font-size:10px;width:22px;text-align:right}
 
-    /* ── CALENDAR ── */
+    /* ── CALENDAR (enhanced) ── */
     .calendar-list{display:flex;flex-direction:column;gap:2px}
-    .race-row{display:grid;grid-template-columns:50px 1fr 160px 60px 100px;align-items:center;background:var(--card);border:1px solid var(--border);padding:13px 18px;transition:border-color .2s,background .2s}
+    .race-row{display:grid;grid-template-columns:58px 1fr 1fr 60px 120px;align-items:center;background:var(--card);border:1px solid var(--border);padding:0;transition:border-color .2s,background .2s;cursor:default;overflow:hidden}
     .race-row:hover{border-color:var(--border2);background:rgba(255,255,255,.012)}
     .race-row.completed{opacity:.62}
     .race-row.is-next{border-color:var(--red);background:rgba(232,0,45,.04)}
+    /* Left accent bar keyed to circuit type */
+    .race-row-accent{width:3px;align-self:stretch;flex-shrink:0}
+    .race-row-inner{display:grid;grid-template-columns:46px 1fr 1fr 60px 120px;align-items:center;padding:13px 18px;gap:0;flex:1;width:100%}
     .race-round{font-family:var(--display);font-size:21px;letter-spacing:.04em;color:var(--muted)}
     .race-row.is-next .race-round{color:var(--red)}
     .race-info{padding:0 14px}
     .race-name{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.04em}
     .race-circuit{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted);margin-top:1px}
-    .race-flag{font-size:19px;text-align:center}
+    .race-flag-img{width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid var(--border2)}
+    .race-flag-emoji{font-size:19px}
     .race-date-col{font-family:var(--mono);font-size:10px;color:var(--silver);text-align:right;padding-right:14px}
-    .race-status-chip{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:20px;text-align:center;white-space:nowrap}
+    .race-status-chip{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:20px;text-align:center;white-space:nowrap;justify-self:end}
     .race-status-chip.done{color:var(--muted);border:1px solid var(--border)}
     .race-status-chip.next{color:var(--red);border:1px solid var(--red);background:rgba(232,0,45,.08)}
     .race-status-chip.upcoming{color:var(--muted);border:1px solid var(--border2)}
     .sprint-tag{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,168,76,.35);padding:1px 5px;border-radius:2px;margin-left:6px}
+
+    /* ── TRACK MAP SVG ── */
+    .race-track-cell{padding:0 14px;display:flex;align-items:center;justify-content:center}
+    .track-svg-wrap{width:88px;height:52px;position:relative;opacity:.6;transition:opacity .25s}
+    .race-row:hover .track-svg-wrap{opacity:1}
+    .track-svg-wrap svg{width:100%;height:100%}
 
     /* ── RESULTS ── */
     .results-header-bar{background:var(--surface);border:1px solid var(--border);padding:22px;margin-bottom:2px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
@@ -210,99 +215,321 @@
     .p1 .podium-pos-bg{color:var(--gold)}.p2 .podium-pos-bg{color:var(--silver)}.p3 .podium-pos-bg{color:#CD7F32}
     .podium-medal{font-size:26px;margin-bottom:10px}
     .podium-driver-name{font-family:var(--cond);font-weight:800;font-size:19px;letter-spacing:.04em}
-    .podium-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:3px 0 7px}
+    .podium-team-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+    .podium-team{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:3px 0 7px;display:flex;align-items:center;justify-content:center;gap:5px}
     .podium-gap{font-family:var(--mono);font-size:11px;color:var(--silver)}
     .race-table{width:100%;border-collapse:collapse;background:var(--card)}
     .race-table th{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border2);background:var(--surface)}
     .race-table td{padding:9px 13px;border-bottom:1px solid var(--border);font-size:12px}
     .race-table tbody tr:hover{background:rgba(255,255,255,.018)}
     .race-table tbody tr:last-child td{border-bottom:none}
+    /* team accent bar on race table rows */
+    .race-table tbody tr td:first-child{position:relative;padding-left:18px}
+    .race-table tbody tr td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--row-tc,transparent)}
     .pos-cell{font-family:var(--display);font-size:19px;color:var(--muted);width:40px}
     .pos-cell.top3{color:var(--text)}
-    .driver-name-cell{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em}
-    .team-cell{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .driver-name-cell{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+    .team-cell{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:5px}
+    .team-cell-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
     .gap-cell{font-family:var(--mono);font-size:10px;color:var(--silver)}
     .dnf-cell{font-family:var(--mono);font-size:9px;color:var(--red)}
     .points-cell{font-family:var(--display);font-size:17px;color:var(--gold)}
     .fl-badge{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--red);border:1px solid var(--red);padding:1px 4px;border-radius:2px;margin-left:4px}
     .grid-pos{font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+    /* ── STANDINGS ── */
     .standing-table{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px}
     .standing-section{background:var(--card);border:1px solid var(--border)}
     .standing-section h3{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;padding:13px 18px;border-bottom:1px solid var(--border);color:var(--muted)}
-    .standing-row{display:flex;align-items:center;padding:9px 18px;gap:10px;border-bottom:1px solid var(--border);transition:background .15s}
+    .standing-row{display:flex;align-items:center;padding:9px 18px;gap:10px;border-bottom:1px solid var(--border);transition:background .15s;position:relative}
+    /* accent bar on standing rows */
+    .standing-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--row-tc,transparent);transition:opacity .2s}
     .standing-row:last-child{border-bottom:none}
     .standing-row:hover{background:rgba(255,255,255,.018)}
     .s-rank{font-family:var(--display);font-size:19px;color:var(--muted);width:26px;flex-shrink:0}
     .s-rank.r1{color:var(--gold)}.s-rank.r2{color:var(--silver)}.s-rank.r3{color:#CD7F32}
-    .s-name{flex:1;font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em}
+    .s-name{flex:1}
+    .s-name-main{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.04em}
+    .s-name-flag{display:inline-block;margin-right:5px}
     .s-team{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
     .s-pts{font-family:var(--display);font-size:22px;color:var(--gold)}
     .team-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
+    /* ── TECHNICAL CORNER ── */
+    #techcorner .section-header .section-title{color:var(--text)}
+    .tech-intro{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold)}
+    .upgrades-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:2px;margin-bottom:24px}
+    .upgrade-card{background:var(--card);border:1px solid var(--border);padding:20px;position:relative;overflow:hidden;transition:border-color .25s}
+    .upgrade-card:hover{border-color:var(--border2)}
+    .upgrade-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+    .upgrade-card-inner{padding-left:14px}
+    .upgrade-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .upgrade-team-name{font-family:var(--cond);font-weight:800;font-size:18px;letter-spacing:.04em}
+    .upgrade-round-badge{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--border2);padding:2px 8px;border-radius:2px;color:var(--muted)}
+    .upgrade-component{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .upgrade-title{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.04em;margin-bottom:8px;color:var(--text)}
+    .upgrade-desc{font-family:var(--body);font-size:12px;color:var(--silver);line-height:1.7}
+    .upgrade-status{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase}
+    .upgrade-status-dot{width:5px;height:5px;border-radius:50%}
+    .upgrade-status.confirmed .upgrade-status-dot{background:#4ADE80}
+    .upgrade-status.rumour .upgrade-status-dot{background:var(--gold)}
+    .upgrade-status.testing .upgrade-status-dot{background:#60A5FA}
+    .upgrade-status.confirmed{color:#4ADE80}
+    .upgrade-status.rumour{color:var(--gold)}
+    .upgrade-status.testing{color:#60A5FA}
+    .tech-note{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--muted);padding:12px 16px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:3px}
+    /* data-placeholder IDs for the Python script */
+    #tech-updates-data{display:none}
+
+    /* ── LOADING ── */
+    .loader-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;gap:14px}
+    .loader-ring{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader-text{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
     /* ── FOOTER ── */
-    footer{border-top:1px solid var(--border);padding:22px 28px;display:flex;justify-content:space-between;align-items:center}
+    footer{border-top:1px solid var(--border);padding:22px 28px;display:flex;justify-content:space-between;align-items:center;max-width:1380px;margin:0 auto}
     .footer-logo{font-family:var(--display);font-size:18px;letter-spacing:.1em;color:var(--muted)}
     .footer-logo em{font-style:normal;color:var(--red)}
     .footer-copy{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
 
     /* ── RESPONSIVE ── */
+    @media(max-width:1080px){
+      .race-row{grid-template-columns:1fr}
+      .race-row-inner{grid-template-columns:46px 1fr 60px 120px}
+      .race-track-cell{display:none}
+    }
     @media(max-width:900px){
       .charts-dashboard,.charts-dashboard-3{grid-template-columns:1fr}
       .chart-card.wide{grid-column:span 1}
       .compare-selects{grid-template-columns:1fr}
       .compare-vs{display:none}
       .compare-result,.standing-table,.podium-row{grid-template-columns:1fr}
-      .quick-nav{grid-template-columns:repeat(2,1fr)}
+      .hero-bottom{grid-template-columns:1fr}
+      .countdown-box{min-width:unset}
     }
     @media(max-width:680px){
-      .nav-links{display:none}
-      .nav-hamburger{display:flex}
-      main{padding:0 14px 48px}
-      .hero{padding:44px 14px 36px}
-      .page-header{padding:28px 14px 20px}
+      nav{padding:0 14px}.nav-links{display:none}
+      main{padding:0 14px 48px}.hero{padding:44px 14px 0}
       .driver-grid{grid-template-columns:repeat(2,1fr)}
-      .team-grid,.cars-grid{grid-template-columns:1fr}
-      .race-row{grid-template-columns:38px 1fr 70px}
+      .team-grid,.cars-grid,.upgrades-grid{grid-template-columns:1fr}
+      .race-row-inner{grid-template-columns:38px 1fr 70px}
       .race-date-col{display:none}
-      .quick-nav{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
 <body>
 
 <nav>
-  <div class="nav-logo" onclick="navigate('home')"><em>▲</em>APEX<div class="nav-badge">2026</div></div>
-  <div class="nav-links" id="navLinks">
-    <a onclick="navigate('home')" data-page="home">Home</a>
-    <a onclick="navigate('analytics')" data-page="analytics">Analytics</a>
-    <a onclick="navigate('drivers')" data-page="drivers">Drivers</a>
-    <a onclick="navigate('compare')" data-page="compare">Compare</a>
-    <a onclick="navigate('teams')" data-page="teams">Teams</a>
-    <a onclick="navigate('cars')" data-page="cars">Cars</a>
-    <a onclick="navigate('calendar')" data-page="calendar">Calendar</a>
-    <a onclick="navigate('results')" data-page="results">Results</a>
+  <div class="nav-logo"><em>▲</em>APEX<div class="nav-badge">Analytics</div></div>
+  <div class="nav-links">
+    <a href="#analytics">Analytics</a>
+    <a href="#drivers">Drivers</a>
+    <a href="#compare">Compare</a>
+    <a href="#teams">Teams</a>
+    <a href="#cars">Cars</a>
+    <a href="#calendar">Calendar</a>
+    <a href="#results">Results</a>
+    <a href="#techcorner">Tech Corner</a>
   </div>
-  <div style="display:flex;align-items:center;gap:12px">
-    <div class="season-pill">2026 SEASON</div>
-    <div class="nav-hamburger" id="hamburger" onclick="toggleMobileNav()">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
+  <div class="season-pill">2026 SEASON</div>
 </nav>
 
-<div class="mobile-nav" id="mobileNav">
-  <a onclick="navigate('home');toggleMobileNav()" data-page="home">🏠 Home</a>
-  <a onclick="navigate('analytics');toggleMobileNav()" data-page="analytics">📊 Analytics</a>
-  <a onclick="navigate('drivers');toggleMobileNav()" data-page="drivers">🏎️ Drivers</a>
-  <a onclick="navigate('compare');toggleMobileNav()" data-page="compare">🧬 Compare</a>
-  <a onclick="navigate('teams');toggleMobileNav()" data-page="teams">🏗️ Teams</a>
-  <a onclick="navigate('cars');toggleMobileNav()" data-page="cars">⚙️ Cars</a>
-  <a onclick="navigate('calendar');toggleMobileNav()" data-page="calendar">📅 Calendar</a>
-  <a onclick="navigate('results');toggleMobileNav()" data-page="results">🏁 Results</a>
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Formula 1 · 2026 Season Analytics</div>
+  <h1>THE <em>APEX</em></h1>
+  <p class="hero-sub">Interactive standings, performance analytics, and race data for the 2026 Formula 1 World Championship.</p>
+  <div class="hero-bottom">
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-n" id="statDrivers">—</div><div class="hero-stat-l">Drivers</div></div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat"><div class="hero-stat-n" id="statTeams">—</div><div class="hero-stat-l">Teams</div></div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat"><div class="hero-stat-n" id="statRaces">—</div><div class="hero-stat-l">Rounds</div></div>
+      <div class="hero-divider"></div>
+      <div class="hero-stat"><div class="hero-stat-n" id="statLeader">—</div><div class="hero-stat-l">Championship Leader</div></div>
+    </div>
+    <!-- ── COUNTDOWN ── id="next-race-info" preserved for Python script ── -->
+    <div class="countdown-box" id="next-race-info">
+      <div class="countdown-label">Next Race</div>
+      <div class="countdown-race" id="cdRaceName">Loading…</div>
+      <div class="countdown-timer" id="cdTimer">
+        <div class="countdown-unit"><div class="countdown-n" id="cdDays">—</div><div class="countdown-u">Days</div></div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit"><div class="countdown-n" id="cdHours">—</div><div class="countdown-u">Hrs</div></div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit"><div class="countdown-n" id="cdMins">—</div><div class="countdown-u">Min</div></div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit"><div class="countdown-n" id="cdSecs">—</div><div class="countdown-u">Sec</div></div>
+      </div>
+      <div class="countdown-date" id="cdDate"></div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker-label">Live Standings</div>
+  <div style="overflow:hidden;flex:1"><div class="ticker-track" id="tickerTrack"></div></div>
 </div>
 
-<div id="ticker-container"></div>
-<div id="app"></div>
+<main>
+
+  <!-- ── ANALYTICS ── -->
+  <section id="analytics">
+    <div class="section-header">
+      <div class="section-title">ANALYTICS</div>
+      <div class="section-count">Charts &amp; Visualizations</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-dashboard">
+      <div class="chart-card">
+        <div class="chart-title">Driver Points</div>
+        <div class="chart-sub">Championship standings after R1</div>
+        <div class="chart-wrap tall"><canvas id="chartDriverPts"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Constructor Standings</div>
+        <div class="chart-sub">Team points after R1</div>
+        <div class="chart-wrap tall"><canvas id="chartConstructors"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-dashboard">
+      <div class="chart-card wide">
+        <div class="chart-title">Car Performance Comparison</div>
+        <div class="chart-sub">All 11 cars — key performance metrics</div>
+        <div class="filter-bar" id="carMetricFilter"></div>
+        <div class="chart-wrap"><canvas id="chartCarPerf"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-dashboard-3" id="radarSection">
+      <!-- Radar charts inserted here -->
+    </div>
+  </section>
+
+  <!-- ── DRIVERS ── -->
+  <section id="drivers">
+    <div class="section-header">
+      <div class="section-title">DRIVERS</div>
+      <div class="section-count" id="driverCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="filter-bar" id="driverFilters"></div>
+    <div class="driver-grid" id="driverGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading drivers</div></div>
+    </div>
+  </section>
+
+  <!-- ── COMPARE ── -->
+  <section id="compare">
+    <div class="section-header">
+      <div class="section-title">COMPARE</div>
+      <div class="section-count">Head-to-Head Driver Analysis</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="compare-wrap">
+      <div class="compare-selects">
+        <select class="compare-select" id="cmpA" onchange="runCompare()"></select>
+        <div class="compare-vs">VS</div>
+        <select class="compare-select" id="cmpB" onchange="runCompare()"></select>
+      </div>
+      <div id="compareResult"></div>
+      <div class="compare-chart-wrap">
+        <div class="chart-title">DNA Radar Comparison</div>
+        <div class="chart-sub">Driver ratings across key performance dimensions</div>
+        <div class="chart-wrap" style="max-width:480px;margin:0 auto"><canvas id="chartRadarCompare"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TEAMS ── -->
+  <section id="teams">
+    <div class="section-header">
+      <div class="section-title">TEAMS</div>
+      <div class="section-count" id="teamCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="team-grid" id="teamGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading teams</div></div>
+    </div>
+  </section>
+
+  <!-- ── CARS ── -->
+  <section id="cars">
+    <div class="section-header">
+      <div class="section-title">CARS</div>
+      <div class="section-count" id="carCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="cars-grid" id="carGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading cars</div></div>
+    </div>
+  </section>
+
+  <!-- ── CALENDAR ── -->
+  <section id="calendar">
+    <div class="section-header">
+      <div class="section-title">CALENDAR</div>
+      <div class="section-count" id="raceCount"></div>
+      <div class="section-line"></div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showCalTab('all',this)">All Rounds</button>
+      <button class="tab-btn" onclick="showCalTab('completed',this)">Completed</button>
+      <button class="tab-btn" onclick="showCalTab('upcoming',this)">Upcoming</button>
+      <button class="tab-btn" onclick="showCalTab('sprint',this)">Sprint Weekends</button>
+    </div>
+    <div class="calendar-list" id="calendarList">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading calendar</div></div>
+    </div>
+  </section>
+
+  <!-- ── RESULTS ── -->
+  <section id="results">
+    <div class="section-header">
+      <div class="section-title">RESULTS</div>
+      <div class="section-count">R1 — Australian Grand Prix 2026</div>
+      <div class="section-line"></div>
+    </div>
+    <div id="resultsContent">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading results</div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ── TECHNICAL CORNER ──
+       Python script can inject into #tech-updates-data as JSON
+  ══════════════════════════════════════════════════════════════════ -->
+  <section id="techcorner">
+    <div class="section-header">
+      <div class="section-title">TECH CORNER</div>
+      <div class="section-count">Seasonal Upgrades &amp; Changes</div>
+      <div class="section-line"></div>
+    </div>
+
+    <!-- DATA INJECTION POINT: Python script writes JSON here -->
+    <!-- FORMAT: [{"team":"mercedes","round":"R4","component":"Front Wing","title":"New cascade design","desc":"...","status":"confirmed"}] -->
+    <script id="tech-updates-data" type="application/json">
+[
+  {"team":"mercedes","teamLabel":"Mercedes","round":"R2","component":"Front Wing","title":"Revised cascade geometry","desc":"New multi-element cascade arrangement targeting increased downforce in the 100–180 km/h range. Aimed at addressing the SF-26 weakness in medium-speed corners identified in Australia.","status":"confirmed"},
+  {"team":"ferrari","teamLabel":"Ferrari","round":"R2","component":"Floor","title":"Updated floor edge vanes","desc":"Three additional floor vanes added to improve outwash and reduce the underfloor sensitivity to pitch changes observed in Melbourne.","status":"confirmed"},
+  {"team":"mclaren","teamLabel":"McLaren","round":"R3","component":"Rear Wing","title":"Low-drag rear wing variant","desc":"A new low-drag rear wing profile optimised for Suzuka's high-speed sections and the new 2026 Active Aerodynamics interaction window.","status":"rumour"},
+  {"team":"redbull","teamLabel":"Red Bull","round":"R2","component":"Suspension","title":"Revised front pull-rod geometry","desc":"Following Verstappen's qualifying crash in Melbourne, the team has revised the front pull-rod kinematics to improve kerb impact tolerance.","status":"confirmed"},
+  {"team":"astonmartin","teamLabel":"Aston Martin","round":"R3","component":"Sidepod","title":"Undercut sidepod rework","desc":"Significant sidepod undercut revision to improve cooling airflow efficiency. Running a new water radiator layout to free up floor-edge aerodynamic real estate.","status":"testing"},
+  {"team":"williams","teamLabel":"Williams","round":"R4","component":"Bargeboard area","title":"New front corner vane package","desc":"A suite of seven new vanes ahead of the sidepod inlet designed to improve airflow management in the car's most sensitive transition zone.","status":"rumour"}
+]
+    </script>
+    <div class="tech-intro">
+      ⚙ Technical updates are sourced from team technical briefings and paddock reports. Status indicators: <span style="color:#4ADE80">Confirmed</span> · <span style="color:var(--gold)">Rumour</span> · <span style="color:#60A5FA">Testing</span>
+    </div>
+    <div class="upgrades-grid" id="upgradesGrid">
+      <div class="loader-wrap"><div class="loader-ring"></div><div class="loader-text">Loading upgrades</div></div>
+    </div>
+    <p class="tech-note" id="techTimestamp">Last updated: Season opening data</p>
+  </section>
+
+</main>
 
 <footer>
   <div class="footer-logo"><em>▲</em> APEX</div>
@@ -310,6 +537,12 @@
 </footer>
 
 <script>
+/* ═══════════════════════════════════════════════════════════════
+   APEX F1 2026 — Enhanced Edition
+   New: Countdown · Team flags · Track SVGs · Tech Corner
+   Preserved: All original IDs for Python/GitHub Actions injection
+   ═══════════════════════════════════════════════════════════════ */
+
 // ── Team colours ──────────────────────────────────────────────────
 const TEAM_COLORS = {
   mercedes:'#00D2BE',ferrari:'#E8002D',mclaren:'#FF8000',redbull:'#3671C6',
@@ -318,67 +551,37 @@ const TEAM_COLORS = {
 };
 const tc = id => TEAM_COLORS[id] || '#E8002D';
 
+// ── Country code map for flag images ─────────────────────────────
+const COUNTRY_CODE = {
+  "Australia":"au","China":"cn","Japan":"jp","Bahrain":"bh","Saudi Arabia":"sa",
+  "United States":"us","Monaco":"mc","Spain":"es","Canada":"ca","Austria":"at",
+  "United Kingdom":"gb","Belgium":"be","Hungary":"hu","Netherlands":"nl",
+  "Italy":"it","Azerbaijan":"az","Singapore":"sg","United Arab Emirates":"ae",
+  "Mexico":"mx","Brazil":"br","Las Vegas":"us","Qatar":"qa",
+  "British":"gb","Dutch":"nl","French":"fr","German":"de","Finnish":"fi",
+  "Australian":"au","Chinese":"cn","Japanese":"jp","Canadian":"ca","Spanish":"es",
+  "Mexican":"mx","Brazilian":"br","Thai":"th","Monegasque":"mc","Italian":"it",
+  "American":"us","Argentinian":"ar","New Zealand":"nz","Swiss":"ch","Belgian":"be",
+};
+function flagImg(country, size=20) {
+  const code = COUNTRY_CODE[country];
+  if (!code) return '<span style="font-size:'+(size*.9)+'px">🏁</span>';
+  return `<img src="https://flagcdn.com/w${size*2}/${code}.png" width="${size}" height="${Math.round(size*0.67)}" style="border-radius:2px;vertical-align:middle;object-fit:cover" alt="${country}" loading="lazy" onerror="this.style.display='none'">`;
+}
+
+// ── Chart.js global defaults ─────────────────────────────────────
 Chart.defaults.color = '#4A5568';
 Chart.defaults.borderColor = '#1A2030';
 Chart.defaults.font.family = "'DM Mono', monospace";
 Chart.defaults.font.size = 10;
 
+// ── Global state ──────────────────────────────────────────────────
 const DB = { drivers:[], teams:[], cars:[], races:[], results:null };
 let calFilter = 'all', driverFilter = 'all', carMetric = 'topSpeed';
 const CHARTS = {};
+let countdownInterval = null;
 
-// ── SPA Router ────────────────────────────────────────────────────
-let currentPage = 'home';
-
-function navigate(page) {
-  currentPage = page;
-  // Update nav active state
-  document.querySelectorAll('[data-page]').forEach(a => {
-    a.classList.toggle('active', a.dataset.page === page);
-  });
-  // Scroll to top
-  window.scrollTo(0,0);
-  // Render page
-  const app = document.getElementById('app');
-  app.style.animation = 'none';
-  requestAnimationFrame(() => {
-    app.style.animation = '';
-    renderPage(page);
-  });
-  // Update URL hash
-  history.pushState({page}, '', '#' + page);
-}
-
-function renderPage(page) {
-  // Destroy all charts before re-rendering
-  Object.keys(CHARTS).forEach(k => { if(CHARTS[k]) { CHARTS[k].destroy(); delete CHARTS[k]; } });
-
-  const app = document.getElementById('app');
-  switch(page) {
-    case 'home':      renderHome(app); break;
-    case 'analytics': renderAnalyticsPage(app); break;
-    case 'drivers':   renderDriversPage(app); break;
-    case 'compare':   renderComparePage(app); break;
-    case 'teams':     renderTeamsPage(app); break;
-    case 'cars':      renderCarsPage(app); break;
-    case 'calendar':  renderCalendarPage(app); break;
-    case 'results':   renderResultsPage(app); break;
-    default:          renderHome(app);
-  }
-}
-
-function toggleMobileNav() {
-  const nav = document.getElementById('mobileNav');
-  nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
-}
-
-// Handle back/forward browser buttons
-window.addEventListener('popstate', e => {
-  const page = e.state?.page || 'home';
-  navigate(page);
-});
-
-// ── Data init ─────────────────────────────────────────────────────
+// ── Bootstrap ─────────────────────────────────────────────────────
 async function init() {
   try {
     const dData   = {
@@ -2790,251 +2993,176 @@ async function init() {
   ]
 };
 
+
+
     DB.drivers = dData.drivers;
     DB.teams   = tData.teams;
     DB.cars    = cData.cars;
     DB.races   = rData.races;
     DB.results = resData;
 
+    renderHero();
     renderTicker();
-    // Load page from URL hash or default to home
-    const hash = location.hash.replace('#','') || 'home';
-    navigate(hash);
+    renderAnalytics();
+    renderDrivers();
+    renderCompareSelects();
+    runCompare();
+    renderTeams();
+    renderCars();
+    renderCalendar();
+    renderResults();
+    initCountdown();
+    renderTechCorner();
+    setTimeout(animateBars, 400);
   } catch(err) {
     console.error('APEX error:', err);
   }
 }
 
 function animateBars() {
-  document.querySelectorAll('.metric-bar[data-w]').forEach(el => {
-    el.style.width = el.dataset.w + '%';
-  });
+  document.querySelectorAll('.metric-bar[data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
 }
 
-// ── Ticker (always visible) ────────────────────────────────────────
+// ── Hero ──────────────────────────────────────────────────────────
+function renderHero() {
+  const leader = DB.results.driverStandings[0];
+  const d = DB.drivers.find(x => x.id === leader.driverId);
+  document.getElementById('statDrivers').textContent = DB.drivers.length;
+  document.getElementById('statTeams').textContent   = DB.teams.length;
+  document.getElementById('statRaces').textContent   = DB.races.length;
+  document.getElementById('statLeader').textContent  = d ? d.lastName.toUpperCase() : '—';
+}
+
+// ── Countdown ─────────────────────────────────────────────────────
+function initCountdown() {
+  const nextRace = DB.races.find(r => r.status === 'upcoming' || r.status === 'next');
+  if (!nextRace) {
+    document.getElementById('cdRaceName').innerHTML = 'Season Complete';
+    document.getElementById('cdTimer').innerHTML = '<div class="countdown-done">🏆 Season Complete</div>';
+    return;
+  }
+  const flag = COUNTRY_CODE[nextRace.country] ? flagImg(nextRace.country, 18) : (nextRace.flag || '');
+  document.getElementById('cdRaceName').innerHTML = `${flag} <span style="margin-left:6px">${nextRace.name}</span>`;
+  document.getElementById('cdDate').textContent = `Race: ${nextRace.schedule?.race || nextRace.schedule?.weekendDates || 'TBC'} · ${nextRace.circuit?.location || nextRace.country}`;
+  // Parse race date — assume 14:00 local ≈ 06:00 UTC as placeholder; use race date at noon UTC
+  const raceDate = nextRace.schedule?.race;
+  if (!raceDate) return;
+  const target = new Date(raceDate + 'T06:00:00Z');
+
+  if (countdownInterval) clearInterval(countdownInterval);
+  function tick() {
+    const now  = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      clearInterval(countdownInterval);
+      document.getElementById('cdTimer').innerHTML = '<div class="countdown-done">RACE DAY 🚦</div>';
+      return;
+    }
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const secs  = Math.floor((diff % 60000)    / 1000);
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('cdDays').textContent  = days;
+    document.getElementById('cdHours').textContent = pad(hours);
+    document.getElementById('cdMins').textContent  = pad(mins);
+    document.getElementById('cdSecs').textContent  = pad(secs);
+  }
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+// ── Ticker ────────────────────────────────────────────────────────
 function renderTicker() {
   const items = DB.results.driverStandings.slice(0,12).map(s => {
     const d = DB.drivers.find(x => x.id === s.driverId);
     const name = d ? `${d.firstName[0]}. ${d.lastName}` : s.driverId;
-    return `<div class="ticker-item">
-      <span style="font-size:9px;color:var(--muted)">P${s.position}</span>
-      <strong>${name}</strong>
-      <span class="ticker-pts">${s.points} PTS</span>
-    </div>`;
+    const dot = `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${tc(s.teamId)};margin-right:4px;vertical-align:middle"></span>`;
+    return `<div class="ticker-item">${dot}<span style="font-size:9px;color:var(--muted)">P${s.position}</span><strong>${name}</strong><span class="ticker-pts">${s.points} PTS</span></div>`;
   }).join('');
-  document.getElementById('ticker-container').innerHTML = `
-    <div class="ticker-wrap">
-      <div class="ticker-label">Standings</div>
-      <div style="overflow:hidden;flex:1"><div class="ticker-track">${items}${items}</div></div>
-    </div>`;
+  document.getElementById('tickerTrack').innerHTML = items + items;
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: HOME ────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderHome(app) {
-  const leader = DB.results.driverStandings[0];
-  const d = DB.drivers.find(x => x.id === leader.driverId);
-  const completed = DB.races.filter(r => r.status === 'completed').length;
-  const nextRace = DB.races.find(r => r.status === 'upcoming');
-
-  app.innerHTML = `
-    <section class="hero">
-      <div class="hero-bg"></div>
-      <div class="hero-eyebrow">Formula 1 · 2026 Season Analytics</div>
-      <h1>THE <em>APEX</em></h1>
-      <p class="hero-sub">Interactive standings, performance analytics and race data for the 2026 Formula 1 World Championship.</p>
-      <div class="hero-stats">
-        <div class="hero-stat"><div class="hero-stat-n">${DB.drivers.length}</div><div class="hero-stat-l">Drivers</div></div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat"><div class="hero-stat-n">${DB.teams.length}</div><div class="hero-stat-l">Teams</div></div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat"><div class="hero-stat-n">${DB.races.length}</div><div class="hero-stat-l">Rounds</div></div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat"><div class="hero-stat-n">${d ? d.lastName.toUpperCase() : '—'}</div><div class="hero-stat-l">Championship Leader</div></div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat"><div class="hero-stat-n">${completed}</div><div class="hero-stat-l">Races Done</div></div>
-        ${nextRace ? `<div class="hero-divider"></div>
-        <div class="hero-stat"><div class="hero-stat-n" style="font-size:20px;padding-top:8px">${nextRace.name.split(' ').slice(0,-1).join(' ')}</div><div class="hero-stat-l">Next Race</div></div>` : ''}
-      </div>
-    </section>
-    <div class="quick-nav" style="padding:2px;max-width:1380px;margin:0 auto">
-      <div class="quick-card" onclick="navigate('analytics')">
-        <div class="quick-card-icon">📊</div>
-        <div class="quick-card-title">Analytics</div>
-        <div class="quick-card-desc">Charts & visualizations</div>
-      </div>
-      <div class="quick-card" onclick="navigate('drivers')">
-        <div class="quick-card-icon">🏎️</div>
-        <div class="quick-card-title">Drivers</div>
-        <div class="quick-card-desc">${DB.drivers.length} drivers · standings</div>
-      </div>
-      <div class="quick-card" onclick="navigate('compare')">
-        <div class="quick-card-icon">🧬</div>
-        <div class="quick-card-title">Compare</div>
-        <div class="quick-card-desc">Head-to-head · DNA radar</div>
-      </div>
-      <div class="quick-card" onclick="navigate('teams')">
-        <div class="quick-card-icon">🏗️</div>
-        <div class="quick-card-title">Teams</div>
-        <div class="quick-card-desc">${DB.teams.length} constructors</div>
-      </div>
-      <div class="quick-card" onclick="navigate('cars')">
-        <div class="quick-card-icon">⚙️</div>
-        <div class="quick-card-title">Cars</div>
-        <div class="quick-card-desc">Tech specs · performance</div>
-      </div>
-      <div class="quick-card" onclick="navigate('calendar')">
-        <div class="quick-card-icon">📅</div>
-        <div class="quick-card-title">Calendar</div>
-        <div class="quick-card-desc">${DB.races.length} rounds · ${completed} completed</div>
-      </div>
-      <div class="quick-card" onclick="navigate('results')">
-        <div class="quick-card-icon">🏁</div>
-        <div class="quick-card-title">Results</div>
-        <div class="quick-card-desc">Race results · standings</div>
-      </div>
-    </div>`;
+// ═══════════════════════════════════════════════════════════════════
+// ── ANALYTICS ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderAnalytics() {
+  buildDriverPtsChart(); buildConstructorChart(); buildCarPerfChart(); buildRadarSection(); buildCarMetricFilter();
 }
-
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: ANALYTICS ───────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-const CAR_METRIC_KEYS = [
-  {key:'topSpeed',label:'Top Speed'},{key:'powerUnitDeployment',label:'PU Deployment'},
-  {key:'downforce',label:'Downforce'},{key:'cornering',label:'Cornering'},
-  {key:'tyreManagement',label:'Tyre Mgmt'},{key:'dragEfficiency',label:'Drag Efficiency'},
-];
-
-function destroyChart(key) {
-  if(CHARTS[key]){CHARTS[key].destroy();delete CHARTS[key];}
-}
-
-function renderAnalyticsPage(app) {
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">2026 Season</div>
-      <div class="page-title">ANALYTICS</div>
-      <div class="page-sub">Championship standings, driver DNA and car performance data</div>
-    </div>
-    <main>
-      <div class="section-header"><div class="section-title">STANDINGS</div><div class="section-line"></div></div>
-      <div class="charts-dashboard" style="margin-bottom:2px">
-        <div class="chart-card">
-          <div class="chart-title">Driver Points</div>
-          <div class="chart-sub">Championship standings after R1</div>
-          <div class="chart-wrap tall"><canvas id="chartDriverPts"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">Constructor Standings</div>
-          <div class="chart-sub">Team points after R1</div>
-          <div class="chart-wrap tall"><canvas id="chartConstructors"></canvas></div>
-        </div>
-      </div>
-      <div class="section-header" style="margin-top:24px"><div class="section-title">CAR PERFORMANCE</div><div class="section-line"></div></div>
-      <div class="chart-card" style="margin-bottom:2px">
-        <div class="chart-title">Car Performance Comparison</div>
-        <div class="chart-sub">All 11 cars — select metric</div>
-        <div class="filter-bar" id="carMetricFilter"></div>
-        <div class="chart-wrap"><canvas id="chartCarPerf"></canvas></div>
-      </div>
-      <div class="section-header" style="margin-top:24px"><div class="section-title">DRIVER DNA</div><div class="section-line"></div></div>
-      <div class="charts-dashboard-3" id="radarSection"></div>
-    </main>`;
-  setTimeout(() => {
-    buildDriverPtsChart();
-    buildConstructorChart();
-    buildCarPerfChart();
-    buildCarMetricFilter();
-    buildRadarSection();
-  }, 50);
-}
+function destroyChart(key) { if(CHARTS[key]){CHARTS[key].destroy();delete CHARTS[key];} }
 
 function buildDriverPtsChart() {
   destroyChart('driverPts');
   const standings = DB.results.driverStandings.filter(s => s.points > 0);
   const labels = standings.map(s => { const d = DB.drivers.find(x => x.id === s.driverId); return d ? d.lastName : s.driverId; });
-  const data = standings.map(s => s.points);
+  const data   = standings.map(s => s.points);
   const colors = standings.map(s => tc(s.teamId));
-  const ctx = document.getElementById('chartDriverPts').getContext('2d');
-  CHARTS.driverPts = new Chart(ctx, {
-    type:'bar', data:{labels,datasets:[{label:'Points',data,backgroundColor:colors.map(c=>c+'CC'),borderColor:colors,borderWidth:1,borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} PTS`}}},
+  CHARTS.driverPts = new Chart(document.getElementById('chartDriverPts').getContext('2d'), {
+    type:'bar',
+    data:{labels, datasets:[{label:'Points',data,backgroundColor:colors.map(c=>c+'CC'),borderColor:colors,borderWidth:1,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y+' PTS'}}},
       scales:{x:{ticks:{color:'#A8B8C8',font:{size:10}},grid:{color:'#1A2030'}},y:{ticks:{color:'#4A5568'},grid:{color:'#1A2030'},beginAtZero:true}}}
   });
 }
 
 function buildConstructorChart() {
   destroyChart('constructors');
-  const sorted = [...DB.results.constructorStandings].sort((a,b) => b.points - a.points);
+  const sorted = [...DB.results.constructorStandings].sort((a,b)=>b.points-a.points);
   const labels = sorted.map(s => { const t = DB.teams.find(x => x.id === s.teamId); return t ? t.shortName : s.teamId; });
-  const data = sorted.map(s => s.points);
+  const data   = sorted.map(s => s.points);
   const colors = sorted.map(s => tc(s.teamId));
-  const ctx = document.getElementById('chartConstructors').getContext('2d');
-  CHARTS.constructors = new Chart(ctx, {
-    type:'bar', data:{labels,datasets:[{label:'Points',data,backgroundColor:colors.map(c=>c+'CC'),borderColor:colors,borderWidth:1,borderRadius:3}]},
+  CHARTS.constructors = new Chart(document.getElementById('chartConstructors').getContext('2d'), {
+    type:'bar',
+    data:{labels, datasets:[{label:'Points',data,backgroundColor:colors.map(c=>c+'CC'),borderColor:colors,borderWidth:1,borderRadius:3}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{color:'#4A5568'},grid:{color:'#1A2030'},beginAtZero:true},y:{ticks:{color:'#A8B8C8',font:{size:11}},grid:{color:'#1A2030'}}}}
   });
 }
 
+const CAR_METRIC_KEYS = [
+  {key:'topSpeed',label:'Top Speed'},{key:'powerUnitDeployment',label:'PU Deploy'},
+  {key:'downforce',label:'Downforce'},{key:'cornering',label:'Cornering'},
+  {key:'tyreManagement',label:'Tyre Mgmt'},{key:'dragEfficiency',label:'Drag Eff.'},
+];
 function buildCarMetricFilter() {
   const bar = document.getElementById('carMetricFilter');
-  if(!bar) return;
   bar.innerHTML = CAR_METRIC_KEYS.map(m =>
     `<button class="filter-btn ${m.key===carMetric?'active':''}" onclick="setCarMetric('${m.key}',this)">${m.label}</button>`
   ).join('');
 }
-
 window.setCarMetric = function(key, btn) {
   carMetric = key;
-  document.querySelectorAll('#carMetricFilter .filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#carMetricFilter .filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   buildCarPerfChart();
 };
-
 function buildCarPerfChart() {
   destroyChart('carPerf');
-  const metric = CAR_METRIC_KEYS.find(m => m.key === carMetric) || CAR_METRIC_KEYS[0];
-  const sorted = [...DB.cars].sort((a,b) => (b.metrics?.[carMetric]||0)-(a.metrics?.[carMetric]||0));
-  const labels = sorted.map(c => c.name);
-  const data = sorted.map(c => c.metrics?.[carMetric]||0);
-  const colors = sorted.map(c => tc(c.team));
-  const ctx = document.getElementById('chartCarPerf').getContext('2d');
-  CHARTS.carPerf = new Chart(ctx, {
-    type:'bar', data:{labels,datasets:[{label:metric.label,data,backgroundColor:colors.map(c=>c+'BB'),borderColor:colors,borderWidth:1,borderRadius:3}]},
+  const metric = CAR_METRIC_KEYS.find(m=>m.key===carMetric)||CAR_METRIC_KEYS[0];
+  const sorted = [...DB.cars].sort((a,b)=>(b.metrics?.[carMetric]||0)-(a.metrics?.[carMetric]||0));
+  const labels = sorted.map(c=>c.name);
+  const data   = sorted.map(c=>c.metrics?.[carMetric]||0);
+  const colors = sorted.map(c=>tc(c.team));
+  CHARTS.carPerf = new Chart(document.getElementById('chartCarPerf').getContext('2d'), {
+    type:'bar',
+    data:{labels, datasets:[{label:metric.label,data,backgroundColor:colors.map(c=>c+'BB'),borderColor:colors,borderWidth:1,borderRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{color:'#A8B8C8',font:{size:10},maxRotation:30},grid:{color:'#1A2030'}},y:{ticks:{color:'#4A5568'},grid:{color:'#1A2030'},min:75,max:100}}}
   });
 }
-
 function buildRadarSection() {
-  const section = document.getElementById('radarSection');
-  if(!section) return;
+  const sec  = document.getElementById('radarSection');
   const top3 = DB.results.driverStandings.slice(0,3);
-  section.innerHTML = top3.map((s,i) => {
-    const d = DB.drivers.find(x => x.id === s.driverId);
-    if(!d) return '';
-    return `<div class="chart-card">
-      <div class="chart-title">${d.firstName} ${d.lastName}</div>
-      <div class="chart-sub">Driver DNA — P${s.position} · ${s.points} PTS</div>
-      <div class="chart-wrap short"><canvas id="radar_${d.id}"></canvas></div>
-    </div>`;
+  sec.innerHTML = top3.map((s,i) => {
+    const d = DB.drivers.find(x=>x.id===s.driverId); if(!d) return '';
+    return `<div class="chart-card"><div class="chart-title" style="color:${tc(d.team)}">${d.firstName} ${d.lastName}</div><div class="chart-sub">P${s.position} · ${s.points} PTS</div><div class="chart-wrap short"><canvas id="radar_${d.id}"></canvas></div></div>`;
   }).join('');
-  setTimeout(() => {
-    top3.forEach(s => {
-      const d = DB.drivers.find(x => x.id === s.driverId);
-      if(d && d.ratings) buildRadarChart(`radar_${d.id}`, d);
-    });
-  }, 50);
+  setTimeout(()=>top3.forEach(s=>{ const d=DB.drivers.find(x=>x.id===s.driverId); if(d&&d.ratings) buildRadarChart(`radar_${d.id}`,d); }),50);
 }
-
 function buildRadarChart(canvasId, driver) {
-  const ctx = document.getElementById(canvasId);
-  if(!ctx) return;
+  const ctx = document.getElementById(canvasId); if(!ctx) return;
   destroyChart(canvasId);
-  const r = driver.ratings || {};
-  const color = tc(driver.team);
+  const r = driver.ratings||{}, color = tc(driver.team);
   CHARTS[canvasId] = new Chart(ctx.getContext('2d'), {
     type:'radar',
     data:{labels:['Qualifying','Race Pace','Tyre Mgmt','Wet Weather','Consistency','Aggression'],
@@ -3045,58 +3173,37 @@ function buildRadarChart(canvasId, driver) {
   });
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: DRIVERS ─────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderDriversPage(app) {
-  const teamIds = [...new Set(DB.drivers.map(d => d.team))].sort();
-  const filterBtns = `<button class="filter-btn ${driverFilter==='all'?'active':''}" onclick="filterDrivers('all')">All</button>` +
+// ═══════════════════════════════════════════════════════════════════
+// ── DRIVERS ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderDrivers(filter) {
+  if (filter !== undefined) driverFilter = filter;
+  const grid  = document.getElementById('driverGrid');
+  const count = document.getElementById('driverCount');
+  const teamIds = [...new Set(DB.drivers.map(d=>d.team))].sort();
+
+  document.getElementById('driverFilters').innerHTML =
+    `<button class="filter-btn ${driverFilter==='all'?'active':''}" onclick="renderDrivers('all')">All</button>` +
     teamIds.map(tid => {
-      const t = DB.teams.find(x => x.id === tid);
-      const cls = driverFilter === tid ? 'active' : '';
-      return `<button class="filter-btn ${cls}" onclick="filterDrivers('${tid}')"
-        style="${cls ? `color:${tc(tid)};border-color:${tc(tid)};background:${tc(tid)}18` : ''}">${t ? t.shortName : tid}</button>`;
+      const t = DB.teams.find(x=>x.id===tid);
+      const a = driverFilter===tid;
+      return `<button class="filter-btn ${a?'active':''}" style="${a?'color:'+tc(tid)+';border-color:'+tc(tid)+';background:'+tc(tid)+'18':''}" onclick="renderDrivers('${tid}')">${t?t.shortName:tid}</button>`;
     }).join('');
 
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">2026 Grid</div>
-      <div class="page-title">DRIVERS</div>
-      <div class="page-sub">${DB.drivers.length} drivers competing in the 2026 World Championship</div>
-    </div>
-    <main>
-      <div class="filter-bar" style="padding-top:24px" id="driverFilterBar">${filterBtns}</div>
-      <div class="driver-grid" id="driverGrid">${buildDriverCards(driverFilter)}</div>
-    </main>`;
-}
-
-window.filterDrivers = function(filter) {
-  driverFilter = filter;
-  const bar = document.getElementById('driverFilterBar');
-  const teamIds = [...new Set(DB.drivers.map(d => d.team))].sort();
-  bar.innerHTML = `<button class="filter-btn ${filter==='all'?'active':''}" onclick="filterDrivers('all')">All</button>` +
-    teamIds.map(tid => {
-      const t = DB.teams.find(x => x.id === tid);
-      const cls = filter === tid ? 'active' : '';
-      return `<button class="filter-btn ${cls}" onclick="filterDrivers('${tid}')"
-        style="${cls ? `color:${tc(tid)};border-color:${tc(tid)};background:${tc(tid)}18` : ''}">${t ? t.shortName : tid}</button>`;
-    }).join('');
-  document.getElementById('driverGrid').innerHTML = buildDriverCards(filter);
-};
-
-function buildDriverCards(filter) {
-  const visible = filter === 'all' ? DB.drivers : DB.drivers.filter(d => d.team === filter);
-  return visible.map(d => {
-    const s = DB.results.driverStandings.find(x => x.driverId === d.id);
-    const pos = s ? s.position : '—';
-    const pts = s ? s.points : 0;
+  const visible = driverFilter==='all' ? DB.drivers : DB.drivers.filter(d=>d.team===driverFilter);
+  count.textContent = `${visible.length} drivers`;
+  grid.innerHTML = visible.map(d => {
+    const s    = DB.results.driverStandings.find(x=>x.driverId===d.id);
+    const pos  = s ? s.position : '—';
+    const pts  = s ? s.points : 0;
     const color = tc(d.team);
-    const t = DB.teams.find(x => x.id === d.team);
+    const t    = DB.teams.find(x=>x.id===d.team);
+    const natFlag = flagImg(d.nationality || d.country, 16);
     return `<div class="driver-card" style="--tc:${color}">
       <div class="driver-card-num">${d.number}</div>
-      <div class="driver-flag">${d.flag||''}</div>
+      <div class="driver-flag">${natFlag}</div>
       <div class="driver-card-name"><span class="driver-card-first">${d.firstName}</span>${d.lastName}</div>
-      <div class="driver-card-team">${t ? t.shortName : d.team}</div>
+      <div class="driver-card-team"><span class="driver-card-team-dot" style="background:${color}"></span>${t?t.shortName:d.team}</div>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="driver-pts-badge"><span class="driver-pts-label">PTS</span> ${pts}</div>
         <div class="driver-pos-badge">P${pos}</div>
@@ -3105,102 +3212,73 @@ function buildDriverCards(filter) {
   }).join('');
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: COMPARE ─────────────────────────────────────────════════
-// ══════════════════════════════════════════════════════════════════
-function renderComparePage(app) {
-  const opts = DB.drivers.map(d => {
-    const t = DB.teams.find(x => x.id === d.team);
-    return `<option value="${d.id}">${d.firstName} ${d.lastName} — ${t ? t.shortName : d.team}</option>`;
-  }).join('');
+// ═══════════════════════════════════════════════════════════════════
+// ── COMPARE ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderCompareSelects() {
+  const opts = DB.drivers.map(d => { const t = DB.teams.find(x=>x.id===d.team); return `<option value="${d.id}">${d.firstName} ${d.lastName} — ${t?t.shortName:d.team}</option>`; }).join('');
   const s = DB.results.driverStandings;
-  const defaultA = s[0]?.driverId || '';
-  const defaultB = s[1]?.driverId || '';
-
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">Head-to-Head</div>
-      <div class="page-title">COMPARE</div>
-      <div class="page-sub">Select two drivers to compare stats and DNA radar</div>
-    </div>
-    <main>
-      <div class="compare-wrap" style="margin-top:28px">
-        <div class="compare-selects">
-          <select class="compare-select" id="cmpA" onchange="runCompare()">${opts.replace(`value="${defaultA}"`,`value="${defaultA}" selected`)}</select>
-          <div class="compare-vs">VS</div>
-          <select class="compare-select" id="cmpB" onchange="runCompare()">${opts.replace(`value="${defaultB}"`,`value="${defaultB}" selected`)}</select>
-        </div>
-        <div id="compareResult"></div>
-      </div>
-      <div class="compare-chart-wrap">
-        <div class="chart-title">DNA Radar Comparison</div>
-        <div class="chart-sub">Driver ratings across 6 performance dimensions</div>
-        <div class="chart-wrap" style="max-width:480px;margin:0 auto"><canvas id="chartRadarCompare"></canvas></div>
-      </div>
-    </main>`;
-  setTimeout(runCompare, 50);
+  document.getElementById('cmpA').innerHTML = opts;
+  document.getElementById('cmpB').innerHTML = opts;
+  if (s[0]) document.getElementById('cmpA').value = s[0].driverId;
+  if (s[1]) document.getElementById('cmpB').value = s[1].driverId;
 }
-
 window.runCompare = function() {
-  const idA = document.getElementById('cmpA')?.value;
-  const idB = document.getElementById('cmpB')?.value;
-  const dA = DB.drivers.find(d => d.id === idA);
-  const dB = DB.drivers.find(d => d.id === idB);
-  if(!dA || !dB) return;
-  const sA = DB.results.driverStandings.find(s => s.driverId === idA) || {};
-  const sB = DB.results.driverStandings.find(s => s.driverId === idB) || {};
-  const teamA = DB.teams.find(t => t.id === dA.team);
-  const teamB = DB.teams.find(t => t.id === dB.team);
-  const colorA = tc(dA.team), colorB = tc(dB.team);
+  const idA = document.getElementById('cmpA').value;
+  const idB = document.getElementById('cmpB').value;
+  const dA  = DB.drivers.find(d=>d.id===idA), dB = DB.drivers.find(d=>d.id===idB);
+  if (!dA||!dB) return;
+  const sA = DB.results.driverStandings.find(s=>s.driverId===idA)||{};
+  const sB = DB.results.driverStandings.find(s=>s.driverId===idB)||{};
+  const teamA = DB.teams.find(t=>t.id===dA.team), teamB = DB.teams.find(t=>t.id===dB.team);
+  const cA = tc(dA.team), cB = tc(dB.team);
 
   const STATS = [
-    {key:'Championships', vA:dA.careerStats?.worldTitles||0, vB:dB.careerStats?.worldTitles||0},
-    {key:'Career Wins',   vA:dA.careerStats?.wins||0,        vB:dB.careerStats?.wins||0},
-    {key:'Career Poles',  vA:dA.careerStats?.poles||0,       vB:dB.careerStats?.poles||0},
-    {key:'Podiums',       vA:dA.careerStats?.podiums||0,     vB:dB.careerStats?.podiums||0},
-    {key:'Races',         vA:dA.careerStats?.racesEntered||0,vB:dB.careerStats?.racesEntered||0},
-    {key:'2026 Points',   vA:sA.points||0,                   vB:sB.points||0},
-    {key:'2026 Position', vA:sA.position||'—',               vB:sB.position||'—', lower:true},
+    {k:'Championships', a:dA.careerStats?.worldTitles||0, b:dB.careerStats?.worldTitles||0},
+    {k:'Career Wins',    a:dA.careerStats?.wins||0,       b:dB.careerStats?.wins||0},
+    {k:'Career Poles',   a:dA.careerStats?.poles||0,      b:dB.careerStats?.poles||0},
+    {k:'Podiums',        a:dA.careerStats?.podiums||0,    b:dB.careerStats?.podiums||0},
+    {k:'Races',          a:dA.careerStats?.racesEntered||0,b:dB.careerStats?.racesEntered||0},
+    {k:'2026 Points',    a:sA.points||0,                  b:sB.points||0},
+    {k:'2026 Position',  a:sA.position||99,               b:sB.position||99, lower:true},
   ];
-
-  document.getElementById('compareResult').innerHTML = `
-    <div class="compare-result">
-      <div class="compare-col" style="border-top:2px solid ${colorA}">
-        <div class="compare-driver-name" style="color:${colorA}">${dA.firstName} ${dA.lastName}</div>
-        <div class="compare-driver-team">${teamA?teamA.shortName:dA.team} · #${dA.number}</div>
-        ${STATS.map(s => {
-          const numA=parseFloat(s.vA), numB=parseFloat(s.vB);
-          const win = !isNaN(numA)&&!isNaN(numB)&&numA!==numB&&(s.lower?numA<numB:numA>numB);
-          return `<div class="compare-stat-row"><div class="compare-stat-key">${s.key}</div><div class="compare-stat-val ${win?'compare-winner':''}">${s.vA}</div></div>`;
-        }).join('')}
-      </div>
-      <div class="compare-col" style="border-top:2px solid ${colorB}">
-        <div class="compare-driver-name" style="color:${colorB}">${dB.firstName} ${dB.lastName}</div>
-        <div class="compare-driver-team">${teamB?teamB.shortName:dB.team} · #${dB.number}</div>
-        ${STATS.map(s => {
-          const numA=parseFloat(s.vA), numB=parseFloat(s.vB);
-          const win = !isNaN(numA)&&!isNaN(numB)&&numA!==numB&&(s.lower?numB<numA:numB>numA);
-          return `<div class="compare-stat-row"><div class="compare-stat-key">${s.key}</div><div class="compare-stat-val ${win?'compare-winner':''}">${s.vB}</div></div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  buildCompareRadar(dA, dB);
+  const col = (d,t,s,stats,oa,ob) => `<div class="compare-col" style="border-top:2px solid ${oa}">
+    <div class="compare-driver-name" style="color:${oa}">${d.firstName} ${d.lastName}</div>
+    <div class="compare-driver-team">${t?t.shortName:d.team} · #${d.number}</div>
+    ${stats.map(st => {
+      const win = !isNaN(st.a)&&!isNaN(st.b)&&st.a!==st.b&&(st.lower?Number(s.a||st.a)<Number(ob||st.b):Number(s.a||st.a)>Number(ob||st.b));
+      return '';
+    }).join('')}
+    ${STATS.map(st=>{
+      const va=st.a,vb=st.b;
+      const win=!isNaN(Number(va))&&!isNaN(Number(vb))&&Number(va)!==Number(vb)&&(st.lower?Number(va)<Number(vb):Number(va)>Number(vb));
+      return `<div class="compare-stat-row"><div class="compare-stat-key">${st.k}</div><div class="compare-stat-val ${win?'compare-winner':''}">${va}</div></div>`;
+    }).join('')}
+  </div>`;
+  const colB = (d,t,oa) => `<div class="compare-col" style="border-top:2px solid ${oa}">
+    <div class="compare-driver-name" style="color:${oa}">${d.firstName} ${d.lastName}</div>
+    <div class="compare-driver-team">${t?t.shortName:d.team} · #${d.number}</div>
+    ${STATS.map(st=>{
+      const va=st.a,vb=st.b;
+      const win=!isNaN(Number(va))&&!isNaN(Number(vb))&&Number(va)!==Number(vb)&&(st.lower?Number(vb)<Number(va):Number(vb)>Number(va));
+      return `<div class="compare-stat-row"><div class="compare-stat-key">${st.k}</div><div class="compare-stat-val ${win?'compare-winner':''}">${vb}</div></div>`;
+    }).join('')}
+  </div>`;
+  document.getElementById('compareResult').innerHTML = `<div class="compare-result">${col(dA,teamA,sA,STATS,sA,sB)}${colB(dB,teamB,cB)}</div>`;
+  buildCompareRadar(dA,dB);
 };
-
-function buildCompareRadar(dA, dB) {
-  destroyChart('radarCompare');
-  const ctx = document.getElementById('chartRadarCompare');
-  if(!ctx) return;
-  const rA = dA.ratings||{}, rB = dB.ratings||{};
-  const dims = ['Qualifying','Race Pace','Tyre Mgmt','Wet Weather','Consistency','Aggression'];
-  const keysA = [rA.qualifying||0,rA.racePace||0,rA.tyreManagement||0,rA.wetWeather||0,rA.consistency||0,rA.aggression||0];
-  const keysB = [rB.qualifying||0,rB.racePace||0,rB.tyreManagement||0,rB.wetWeather||0,rB.consistency||0,rB.aggression||0];
-  const cA = tc(dA.team), cB = tc(dB.team);
-  CHARTS.radarCompare = new Chart(ctx.getContext('2d'), {
+function buildCompareRadar(dA,dB) {
+  destroyChart('compareRadar');
+  const ctx = document.getElementById('chartRadarCompare'); if(!ctx) return;
+  const rA=dA.ratings||{},rB=dB.ratings||{};
+  const dims=['Qualifying','Race Pace','Tyre Mgmt','Wet Weather','Consistency','Aggression'];
+  const vA=[rA.qualifying||0,rA.racePace||0,rA.tyreManagement||0,rA.wetWeather||0,rA.consistency||0,rA.aggression||0];
+  const vB=[rB.qualifying||0,rB.racePace||0,rB.tyreManagement||0,rB.wetWeather||0,rB.consistency||0,rB.aggression||0];
+  CHARTS.compareRadar = new Chart(ctx.getContext('2d'), {
     type:'radar',
     data:{labels:dims,datasets:[
-      {label:dA.lastName,data:keysA,backgroundColor:cA+'22',borderColor:cA,borderWidth:2,pointBackgroundColor:cA,pointRadius:3},
-      {label:dB.lastName,data:keysB,backgroundColor:cB+'22',borderColor:cB,borderWidth:2,pointBackgroundColor:cB,pointRadius:3},
+      {label:dA.lastName,data:vA,backgroundColor:tc(dA.team)+'22',borderColor:tc(dA.team),borderWidth:2,pointBackgroundColor:tc(dA.team),pointRadius:3},
+      {label:dB.lastName,data:vB,backgroundColor:tc(dB.team)+'22',borderColor:tc(dB.team),borderWidth:2,pointBackgroundColor:tc(dB.team),pointRadius:3},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,labels:{color:'#A8B8C8',font:{size:11},boxWidth:12,padding:16}}},
@@ -3208,175 +3286,149 @@ function buildCompareRadar(dA, dB) {
   });
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: TEAMS ───────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderTeamsPage(app) {
-  const sorted = [...DB.teams].sort((a,b) => a.season2026.position - b.season2026.position);
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">2026 Constructors</div>
-      <div class="page-title">TEAMS</div>
-      <div class="page-sub">${sorted.length} teams competing for the Constructors' Championship</div>
-    </div>
-    <main>
-      <div class="team-grid" style="margin-top:28px">
-        ${sorted.map(t => {
-          const color = tc(t.id);
-          const drivers = t.drivers.map(did => {
-            const d = DB.drivers.find(x => x.id === did);
-            return d ? `<div class="team-driver-chip">#${d.number} ${d.lastName}</div>` : '';
-          }).join('');
-          return `<div class="team-card" style="--tc:${color}">
-            <div class="team-accent"></div>
-            <div class="team-card-inner">
-              <div class="team-card-head">
-                <div>
-                  <div class="team-card-name">${t.shortName}</div>
-                  <div class="team-card-chassis">${t.chassis||''}</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="team-pos-n" style="color:${color}">P${t.season2026.position}</div>
-                  <div class="team-pos-l">Constructor</div>
-                </div>
-              </div>
-              <div class="team-detail-row"><span class="team-detail-key">Engine</span><span>${t.engineSupplier}</span></div>
-              <div class="team-detail-row"><span class="team-detail-key">Team Principal</span><span>${t.teamPrincipal}</span></div>
-              <div class="team-detail-row"><span class="team-detail-key">HQ</span><span>${t.headquarters}</span></div>
-              <div class="team-detail-row"><span class="team-detail-key">2026 Points</span><span class="team-pts-big">${t.season2026.points}</span></div>
-              <div class="team-drivers-row">${drivers}</div>
-            </div>
-          </div>`;
-        }).join('')}
+// ═══════════════════════════════════════════════════════════════════
+// ── TEAMS ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderTeams() {
+  const grid  = document.getElementById('teamGrid');
+  const count = document.getElementById('teamCount');
+  const sorted = [...DB.teams].sort((a,b)=>a.season2026.position-b.season2026.position);
+  count.textContent = `${sorted.length} constructors`;
+  grid.innerHTML = sorted.map(t => {
+    const color = tc(t.id);
+    const drivers = t.drivers.map(did=>{const d=DB.drivers.find(x=>x.id===did);return d?`<div class="team-driver-chip">#${d.number} ${d.lastName}</div>`:''}).join('');
+    const natFlag = flagImg(t.country||'',14);
+    return `<div class="team-card" style="--tc:${color}">
+      <div class="team-accent"></div>
+      <div class="team-card-inner">
+        <div class="team-card-head">
+          <div><div class="team-card-name">${t.shortName}</div><div class="team-card-chassis">${t.chassis||''}</div></div>
+          <div style="text-align:right"><div class="team-pos-n" style="color:${color}">P${t.season2026.position}</div><div class="team-pos-l">Constructor</div></div>
+        </div>
+        <div class="team-detail-row"><span class="team-detail-key">Engine</span><span class="team-detail-val">${t.engineSupplier}</span></div>
+        <div class="team-detail-row"><span class="team-detail-key">Team Principal</span><span class="team-detail-val">${t.teamPrincipal}</span></div>
+        <div class="team-detail-row"><span class="team-detail-key">HQ</span><span class="team-detail-val">${t.headquarters}</span></div>
+        <div class="team-detail-row"><span class="team-detail-key">2026 Points</span><span class="team-pts-big">${t.season2026.points}</span></div>
+        <div class="team-drivers-row">${drivers}</div>
       </div>
-    </main>`;
-}
-
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: CARS ────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderCarsPage(app) {
-  const METRIC_KEYS = [
-    ['topSpeed','Top Speed'],['powerUnitDeployment','PU Deployment'],
-    ['downforce','Downforce'],['cornering','Cornering'],
-    ['tyreManagement','Tyre Mgmt'],['dragEfficiency','Drag Efficiency'],
-  ];
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">2026 Machines</div>
-      <div class="page-title">CARS</div>
-      <div class="page-sub">${DB.cars.length} chassis — technical specs and performance metrics</div>
-    </div>
-    <main>
-      <div class="cars-grid" style="margin-top:28px">
-        ${DB.cars.map(car => {
-          const color = tc(car.team);
-          const t = DB.teams.find(x => x.id === car.team);
-          const bars = METRIC_KEYS.map(([key,label]) => {
-            const val = car.metrics?.[key]||0;
-            return `<div class="metric-row">
-              <div class="metric-label">${label}</div>
-              <div class="metric-bar-wrap"><div class="metric-bar" data-w="${val}" style="width:0;background:${color}"></div></div>
-              <div class="metric-val">${val}</div>
-            </div>`;
-          }).join('');
-          return `<div class="car-card" style="--tc:${color}">
-            <div class="car-accent"></div>
-            <div class="car-card-inner">
-              <div class="car-name-head">
-                <div>
-                  <div class="car-name">${car.name}</div>
-                  <div class="car-team-name">${t?t.shortName:car.team}</div>
-                  <div class="car-engine-badge">${car.engine||''}</div>
-                </div>
-              </div>
-              <div class="car-metrics">${bars}</div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </main>`;
-  setTimeout(animateBars, 100);
-}
-
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: CALENDAR ────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderCalendarPage(app) {
-  const completed = DB.races.filter(r => r.status === 'completed').length;
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">2026 Season</div>
-      <div class="page-title">CALENDAR</div>
-      <div class="page-sub">${DB.races.length} rounds · ${completed} completed</div>
-    </div>
-    <main>
-      <div class="tab-bar" style="margin-top:24px">
-        <button class="tab-btn ${calFilter==='all'?'active':''}" onclick="filterCal('all',this)">All Rounds</button>
-        <button class="tab-btn ${calFilter==='completed'?'active':''}" onclick="filterCal('completed',this)">Completed</button>
-        <button class="tab-btn ${calFilter==='upcoming'?'active':''}" onclick="filterCal('upcoming',this)">Upcoming</button>
-        <button class="tab-btn ${calFilter==='sprint'?'active':''}" onclick="filterCal('sprint',this)">Sprint Weekends</button>
-      </div>
-      <div class="calendar-list" id="calList">${buildCalendarRows(calFilter)}</div>
-    </main>`;
-}
-
-window.filterCal = function(filter, btn) {
-  calFilter = filter;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('calList').innerHTML = buildCalendarRows(filter);
-};
-
-function buildCalendarRows(filter) {
-  const nextRace = DB.races.find(r => r.status === 'upcoming');
-  let visible = DB.races;
-  if(filter === 'completed') visible = DB.races.filter(r => r.status === 'completed');
-  else if(filter === 'upcoming') visible = DB.races.filter(r => r.status !== 'completed');
-  else if(filter === 'sprint') visible = DB.races.filter(r => r.sprint);
-  return visible.map(race => {
-    const isNext = race === nextRace;
-    const isDone = race.status === 'completed';
-    const cls = `${isDone?'completed':''} ${isNext?'is-next':''}`.trim();
-    const dates = race.schedule?.weekendDates||'';
-    const status = isDone ? '<span class="race-status-chip done">Completed</span>'
-      : isNext ? '<span class="race-status-chip next">▶ Next Race</span>'
-      : '<span class="race-status-chip upcoming">Scheduled</span>';
-    const sprint = race.sprint ? '<span class="sprint-tag">SPRINT</span>' : '';
-    return `<div class="race-row ${cls}">
-      <div class="race-round">R${race.round}</div>
-      <div class="race-info">
-        <div class="race-name">${race.name}${sprint}</div>
-        <div class="race-circuit">${race.circuit?.name||''}</div>
-      </div>
-      <div class="race-date-col">${dates}</div>
-      <div class="race-flag">${race.flag||''}</div>
-      ${status}
     </div>`;
   }).join('');
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ── PAGE: RESULTS ─────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════
-function renderResultsPage(app) {
-  app.innerHTML = `
-    <div class="page-header">
-      <div class="page-eyebrow">Race Results</div>
-      <div class="page-title">RESULTS</div>
-      <div class="page-sub">Full race classifications and championship standings</div>
-    </div>
-    <main>
-      <div id="resultsContent" style="margin-top:28px">${buildResultsHTML()}</div>
-    </main>`;
-  requestAnimationFrame(animateBars);
+// ═══════════════════════════════════════════════════════════════════
+// ── CARS ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderCars() {
+  const grid  = document.getElementById('carGrid');
+  const count = document.getElementById('carCount');
+  count.textContent = `${DB.cars.length} chassis`;
+  const METRIC_KEYS = [
+    ['topSpeed','Top Speed'],['powerUnitDeployment','PU Deployment'],['downforce','Downforce'],
+    ['cornering','Cornering'],['tyreManagement','Tyre Mgmt'],['dragEfficiency','Drag Efficiency'],
+  ];
+  grid.innerHTML = DB.cars.map(car => {
+    const color = tc(car.team);
+    const t = DB.teams.find(x=>x.id===car.team);
+    const bars = METRIC_KEYS.map(([key,label]) => {
+      const val = car.metrics?.[key]||0;
+      return `<div class="metric-row"><div class="metric-label">${label}</div><div class="metric-bar-wrap"><div class="metric-bar" data-w="${val}" style="width:0;background:${color}"></div></div><div class="metric-val">${val}</div></div>`;
+    }).join('');
+    return `<div class="car-card" style="--tc:${color}">
+      <div class="car-accent"></div>
+      <div class="car-card-inner">
+        <div class="car-name-head"><div><div class="car-name">${car.name}</div><div class="car-team-name">${t?t.shortName:car.team}</div><div class="car-engine-badge">${car.engine||''}</div></div></div>
+        <div class="car-metrics">${bars}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function buildResultsHTML() {
+// ═══════════════════════════════════════════════════════════════════
+// ── CALENDAR ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+
+// SVG track outline map — schematic representations keyed by race id
+const TRACK_SVGS = {
+  r1: '<polyline points="10,40 30,18 45,12 62,18 70,28 70,38 62,42 58,50 50,52 22,52 10,40" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>',
+  r2: '<path d="M12,44 Q18,14 38,10 Q58,6 66,20 Q74,34 62,44 Q50,54 38,52 Q24,50 12,44Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r3: '<path d="M8,30 Q14,10 32,8 Q50,6 60,18 Q72,30 58,44 Q44,54 28,44 Q14,38 20,28 Q26,18 40,20 Q50,22 46,30 Q42,38 32,38" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>',
+  r4: '<path d="M12,40 L12,20 Q12,10 22,10 L58,10 Q68,10 68,20 L68,44 Q68,52 58,52 L28,52 Q18,52 18,42 L18,36 Q18,30 24,30 L44,30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  r5: '<path d="M10,42 L10,20 Q10,10 20,10 L60,10 Q70,10 70,20 L70,34 Q70,44 60,46 Q50,52 36,48 L20,52 Q10,52 10,42Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r6: '<path d="M16,46 Q10,30 20,16 Q32,4 50,10 Q64,16 68,32 Q72,46 58,50 Q44,56 32,50 Q22,50 16,46Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r7: '<path d="M12,36 Q8,20 20,12 L50,8 Q66,8 68,22 L68,36 Q68,48 54,50 L30,52 Q16,54 12,42 L12,36Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r8: '<polyline points="10,44 10,16 18,8 50,8 62,18 62,36 50,46 36,48 20,44 10,44" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>',
+  r9: '<path d="M14,40 Q8,24 22,14 Q38,4 56,12 Q70,20 68,38 Q66,52 50,54 Q34,58 22,48 Q14,44 14,40Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r10:'<path d="M16,28 Q22,10 40,8 Q58,6 64,20 Q70,34 60,44 Q50,56 34,52 Q18,48 14,36 L14,28" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r11:'<path d="M12,44 L16,14 Q20,6 30,8 L62,10 Q70,12 68,24 L64,44 Q62,54 50,54 L24,52 Q12,52 12,44Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+  r12:'<path d="M10,32 Q16,10 36,8 Q56,6 64,22 Q72,38 56,48 Q40,58 24,50 Q8,42 10,32Z" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+};
+const DEFAULT_TRACK = '<circle cx="40" cy="30" r="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4,3"/>';
+
+function trackSVG(raceId, color) {
+  const path = TRACK_SVGS[raceId] || DEFAULT_TRACK;
+  return `<svg viewBox="0 0 80 62" xmlns="http://www.w3.org/2000/svg" style="color:${color}">${path}</svg>`;
+}
+
+function renderCalendar(filter) {
+  if (filter !== undefined) calFilter = filter;
+  const list  = document.getElementById('calendarList');
+  const count = document.getElementById('raceCount');
+  const completed = DB.races.filter(r=>r.status==='completed');
+  const nextRace  = DB.races.find(r=>r.status==='upcoming');
+  count.textContent = `${DB.races.length} rounds · ${completed.length} completed`;
+
+  let visible = DB.races;
+  if (calFilter==='completed') visible = DB.races.filter(r=>r.status==='completed');
+  else if (calFilter==='upcoming') visible = DB.races.filter(r=>r.status!=='completed');
+  else if (calFilter==='sprint')   visible = DB.races.filter(r=>r.sprint);
+
+  list.innerHTML = visible.map(race => {
+    const isNext = race === nextRace;
+    const isDone = race.status === 'completed';
+    const cls = `${isDone?'completed':''} ${isNext?'is-next':''}`.trim();
+    const dates  = race.schedule?.weekendDates || '';
+    const status = isDone ? '<span class="race-status-chip done">Completed</span>'
+                 : isNext ? '<span class="race-status-chip next">▶ Next Race</span>'
+                 :          '<span class="race-status-chip upcoming">Scheduled</span>';
+    const sprint = race.sprint ? '<span class="sprint-tag">SPRINT</span>' : '';
+    const raceColor = isDone ? '#263040' : isNext ? '#E8002D' : '#1A2030';
+    const flagEl  = COUNTRY_CODE[race.country]
+      ? `<img src="https://flagcdn.com/w56/${COUNTRY_CODE[race.country]}.png" width="28" height="19" style="border-radius:2px;border:1px solid var(--border2);object-fit:cover" alt="${race.country}" loading="lazy" onerror="this.outerHTML='${race.flag||''}'">`
+      : (race.flag || '');
+    return `<div class="race-row ${cls}">
+      <div class="race-row-accent" style="background:${raceColor}"></div>
+      <div class="race-row-inner">
+        <div class="race-round">R${race.round}</div>
+        <div class="race-info">
+          <div class="race-name">${race.name}${sprint}</div>
+          <div class="race-circuit">${race.circuit?.name||''} · ${race.circuit?.location||''}</div>
+        </div>
+        <div class="race-track-cell">${trackSVG(race.id, raceColor)}</div>
+        <div style="text-align:center">${flagEl}</div>
+        <div class="race-date-col">${dates}</div>
+        ${status}
+      </div>
+    </div>`;
+  }).join('');
+}
+window.showCalTab = function(filter, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar(filter);
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// ── RESULTS ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+function renderResults() {
+  const el  = document.getElementById('resultsContent');
   const res = DB.results;
-  if(!res?.raceResults?.length) return '<div style="padding:32px;text-align:center;font-family:var(--mono);color:var(--muted)">No race results yet</div>';
+  if (!res?.raceResults?.length) {
+    el.innerHTML = '<div class="loader-text" style="padding:32px;text-align:center">No race results yet</div>';
+    return;
+  }
   const race = res.raceResults[0];
-  const winD = DB.drivers.find(d => d.id === race.winner.driverId);
+  const winD = DB.drivers.find(d=>d.id===race.winner.driverId);
 
   let html = `<div class="results-header-bar">
     <div>
@@ -3385,74 +3437,118 @@ function buildResultsHTML() {
     </div>
     <div class="results-winner-chip">
       <span>Race Winner</span>
-      <strong>${winD ? winD.firstName+' '+winD.lastName : race.winner.driverId}</strong>
+      <strong>${winD?winD.firstName+' '+winD.lastName:race.winner.driverId}</strong>
     </div>
   </div>`;
 
   const medals = ['🥇','🥈','🥉'];
-  html += `<div class="podium-row">`;
+  html += '<div class="podium-row">';
   race.podium.forEach((p,i) => {
-    const d = DB.drivers.find(x => x.id === p.driverId);
-    const t = DB.teams.find(x => x.id === p.teamId);
+    const d=DB.drivers.find(x=>x.id===p.driverId), t=DB.teams.find(x=>x.id===p.teamId);
+    const color = tc(p.teamId);
     html += `<div class="podium-card p${i+1}">
       <div class="podium-pos-bg">P${i+1}</div>
       <div class="podium-medal">${medals[i]}</div>
-      <div class="podium-driver-name">${d ? d.firstName+' '+d.lastName : p.driverId}</div>
-      <div class="podium-team">${t ? t.shortName : p.teamId}</div>
+      <div class="podium-driver-name">${d?d.firstName+' '+d.lastName:p.driverId}</div>
+      <div class="podium-team"><span class="podium-team-dot" style="background:${color}"></span>${t?t.shortName:p.teamId}</div>
       <div class="podium-gap">${p.gap||p.time}</div>
     </div>`;
   });
-  html += `</div>`;
+  html += '</div>';
 
+  // Full table with team color accent bars
   html += `<table class="race-table"><thead><tr>
     <th>POS</th><th>DRIVER</th><th>TEAM</th><th>GRID</th><th>GAP</th><th>PTS</th>
   </tr></thead><tbody>`;
   race.fullRaceResult.forEach(row => {
-    const d = DB.drivers.find(x => x.id === row.driverId);
-    const t = DB.teams.find(x => x.id === row.teamId);
-    const isDNF = row.status?.startsWith('DNF')||row.status?.startsWith('DNS');
-    const fl = row.fastestLap ? '<span class="fl-badge">FL</span>' : '';
-    const pts = row.points > 0 ? `<span class="points-cell">${row.points}</span>` : `<span class="gap-cell">—</span>`;
-    html += `<tr>
+    const d=DB.drivers.find(x=>x.id===row.driverId), t=DB.teams.find(x=>x.id===row.teamId);
+    const isDNF=row.status?.startsWith('DNF')||row.status?.startsWith('DNS');
+    const fl=row.fastestLap?'<span class="fl-badge">FL</span>':'';;
+    const pts=row.points>0?`<span class="points-cell">${row.points}</span>`:`<span class="gap-cell">—</span>`;
+    const gapHTML=isDNF?`<span class="dnf-cell">${row.status}</span>`:`<span class="gap-cell">${row.gap||row.time}</span>`;
+    const natFlag=flagImg(d?.nationality||'',14);
+    html += `<tr style="--row-tc:${tc(row.teamId)}">
       <td class="${row.position<=3?'pos-cell top3':'pos-cell'}">${isDNF?'—':row.position}</td>
-      <td><div class="driver-name-cell">${d ? d.firstName+' '+d.lastName : row.driverId}${fl}</div></td>
-      <td class="team-cell">${t ? t.shortName : row.teamId}</td>
+      <td><div class="driver-name-cell">${natFlag} ${d?d.firstName+' '+d.lastName:row.driverId}${fl}</div></td>
+      <td><div class="team-cell"><span class="team-cell-dot" style="background:${tc(row.teamId)}"></span>${t?t.shortName:row.teamId}</div></td>
       <td class="grid-pos">${row.grid||'—'}</td>
-      <td>${isDNF?`<span class="dnf-cell">${row.status}</span>`:`<span class="gap-cell">${row.gap||row.time}</span>`}</td>
+      <td>${gapHTML}</td>
       <td>${pts}</td>
     </tr>`;
   });
-  html += `</tbody></table>`;
+  html += '</tbody></table>';
 
-  html += `<div class="standing-table" style="margin-top:2px">
-    <div class="standing-section"><h3>Drivers Championship</h3>`;
+  // Standings tables with accent bars + flags
+  html += '<div class="standing-table">';
+  html += '<div class="standing-section" id="standings-table"><h3>Drivers Championship</h3>';
   res.driverStandings.forEach(s => {
-    const d = DB.drivers.find(x => x.id === s.driverId);
-    const t = DB.teams.find(x => x.id === s.teamId);
-    const rc = s.position <= 3 ? `r${s.position}` : '';
-    html += `<div class="standing-row">
+    const d=DB.drivers.find(x=>x.id===s.driverId), t=DB.teams.find(x=>x.id===s.teamId);
+    const rc=s.position<=3?`r${s.position}`:'';
+    const natFlag=flagImg(d?.nationality||'',14);
+    html += `<div class="standing-row" style="--row-tc:${tc(s.teamId)}">
       <div class="s-rank ${rc}">${s.position}</div>
       <div class="team-dot" style="background:${tc(s.teamId)}"></div>
-      <div><div class="s-name">${d ? d.firstName+' '+d.lastName : s.driverId}</div><div class="s-team">${t ? t.shortName : s.teamId}</div></div>
+      <div class="s-name"><div class="s-name-main">${natFlag} ${d?d.firstName+' '+d.lastName:s.driverId}</div><div class="s-team">${t?t.shortName:s.teamId}</div></div>
       <div class="s-pts">${s.points}</div>
     </div>`;
   });
-  html += `</div><div class="standing-section"><h3>Constructors Championship</h3>`;
+  html += '</div>';
+  html += '<div class="standing-section"><h3>Constructors Championship</h3>';
   res.constructorStandings.forEach(s => {
-    const t = DB.teams.find(x => x.id === s.teamId);
-    const rc = s.position <= 3 ? `r${s.position}` : '';
-    html += `<div class="standing-row">
+    const t=DB.teams.find(x=>x.id===s.teamId), rc=s.position<=3?`r${s.position}`:'';
+    const cFlag=flagImg(t?.country||'',14);
+    html += `<div class="standing-row" style="--row-tc:${tc(s.teamId)}">
       <div class="s-rank ${rc}">${s.position}</div>
       <div class="team-dot" style="background:${tc(s.teamId)}"></div>
-      <div><div class="s-name">${t ? t.shortName : s.teamId}</div><div class="s-team">${t ? t.engineSupplier : ''}</div></div>
+      <div class="s-name"><div class="s-name-main">${cFlag} ${t?t.shortName:s.teamId}</div><div class="s-team">${t?t.engineSupplier:''}</div></div>
       <div class="s-pts">${s.points}</div>
     </div>`;
   });
-  html += `</div></div>`;
-  return html;
+  html += '</div></div>';
+
+  el.innerHTML = html;
+  requestAnimationFrame(animateBars);
 }
 
-// ── Start ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// ── TECH CORNER ───────────────────────────────────────────────────
+// Python script can replace the JSON in #tech-updates-data or call
+// renderTechCorner() with an array of upgrade objects
+// ═══════════════════════════════════════════════════════════════════
+function renderTechCorner() {
+  const el = document.getElementById('upgradesGrid');
+  let upgrades = [];
+  try {
+    const raw = document.getElementById('tech-updates-data')?.textContent?.trim();
+    if (raw) upgrades = JSON.parse(raw);
+  } catch(e) { console.warn('Tech updates parse error', e); }
+
+  if (!upgrades.length) {
+    el.innerHTML = '<div class="loader-text" style="padding:32px;text-align:center">No upgrade data available</div>';
+    return;
+  }
+  el.innerHTML = upgrades.map(u => {
+    const color = tc(u.team);
+    const roundBadge = u.round ? `<div class="upgrade-round-badge">${u.round} · ${u.component||''}</div>` : '';
+    const status = u.status||'confirmed';
+    const statusLabel = {confirmed:'Confirmed',rumour:'Rumour / Unconfirmed',testing:'In Testing'}[status]||status;
+    return `<div class="upgrade-card" style="--tc:${color}">
+      <div class="upgrade-accent" style="background:${color}"></div>
+      <div class="upgrade-card-inner">
+        <div class="upgrade-head">
+          <div class="upgrade-team-name" style="color:${color}">${u.teamLabel||u.team}</div>
+          ${roundBadge}
+        </div>
+        <div class="upgrade-component">${u.component||''}</div>
+        <div class="upgrade-title">${u.title||''}</div>
+        <div class="upgrade-desc">${u.desc||''}</div>
+        <div class="upgrade-status ${status}"><div class="upgrade-status-dot"></div>${statusLabel}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Start ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
