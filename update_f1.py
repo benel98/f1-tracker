@@ -238,15 +238,163 @@ def parse_race_statuses(wikitext: str) -> dict[int, str]:
     return statuses
 
 
+# ── Driver Ratings Engine ─────────────────────────────────────────────────────
+#
+# Uses Jolpica-F1 (api.jolpi.ca) — the official open-source replacement for the
+# deprecated Ergast API. Identical endpoints, no API key, free.
+#
+# 6 radar dimensions computed from real career stats:
+#   qualifying     → pole rate + top-10 qualifying rate
+#   racePace       → win rate + podium rate + points per race
+#   tyreManagement → net positions gained per race (strategy/tyre proxy)
+#   wetWeather     → manually researched base (no public API source exists)
+#   consistency    → finish rate + top-10 finish rate
+#   aggression     → total position movement per race + dnf rate
+#
+# All metrics normalised to 70–99 relative to the current grid.
+
+JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1"
+
+JOLPICA_DRIVER_IDS = {
+    "russell":    "russell",    "antonelli":  "antonelli",
+    "leclerc":    "leclerc",    "hamilton":   "hamilton",
+    "norris":     "norris",     "piastri":    "piastri",
+    "verstappen": "max_verstappen", "hadjar": "hadjar",
+    "alonso":     "alonso",     "stroll":     "stroll",
+    "albon":      "albon",      "sainz":      "sainz",
+    "lawson":     "lawson",     "lindblad":   "lindblad",
+    "ocon":       "ocon",       "bearman":    "bearman",
+    "hulkenberg": "hulkenberg", "bortoleto":  "bortoleto",
+    "gasly":      "gasly",      "colapinto":  "colapinto",
+    "perez":      "perez",      "bottas":     "bottas",
+}
+
+# Wet-weather scores - manually researched, updated rarely
+WET_BASE = {
+    "hamilton": 97, "verstappen": 94, "alonso": 93,
+    "russell":  88, "leclerc":    85, "norris": 84,
+    "sainz":    82, "gasly":      80, "piastri": 78,
+    "hulkenberg": 78, "ocon":     79, "bottas":  77,
+    "perez":    75, "albon":      76, "colapinto": 74,
+    "lawson":   73, "stroll":     72, "antonelli": 72,
+    "hadjar":   71, "bearman":    72, "bortoleto": 71,
+    "lindblad": 70,
+}
+
+
+def jolpica_get(path):
+    url = f"{JOLPICA_BASE}/{path}.json?limit=1000"
+    req = urllib.request.Request(url, headers={"User-Agent": "APEX-F1-Updater/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read().decode())
+    except Exception as e:
+        print(f"  [warn] Jolpica request failed ({path}): {e}")
+        return {}
+
+
+def fetch_career_stats(ergast_id):
+    """Fetch and aggregate career race + qualifying stats for one driver."""
+    stats = {
+        "races": 0, "wins": 0, "poles": 0, "podiums": 0,
+        "points": 0.0, "dnfs": 0, "finished": 0,
+        "pos_gained": 0, "pos_lost": 0, "top10": 0,
+    }
+    DNF_KEYWORDS = (
+        "Retired", "Accident", "Collision", "Spun off", "Engine",
+        "Gearbox", "Hydraulics", "Brakes", "Suspension", "Electrical",
+        "Mechanical", "Fire", "Tyre", "Wheel", "Oil", "Water", "Fuel",
+    )
+    data = jolpica_get(f"drivers/{ergast_id}/results")
+    for race in data.get("MRData", {}).get("RaceTable", {}).get("Races", []):
+        for res in race.get("Results", []):
+            stats["races"] += 1
+            grid   = int(res.get("grid", 0) or 0)
+            pos    = res.get("position", "")
+            status = res.get("status", "")
+            stats["points"] += float(res.get("points", 0) or 0)
+            if any(k in status for k in DNF_KEYWORDS):
+                stats["dnfs"] += 1
+            elif pos.isdigit():
+                finish = int(pos)
+                stats["finished"] += 1
+                if finish <= 3:  stats["podiums"]    += 1
+                if finish <= 10: stats["top10"]      += 1
+                if grid > 0:
+                    diff = grid - finish
+                    if diff > 0: stats["pos_gained"] += diff
+                    else:        stats["pos_lost"]   += abs(diff)
+            if pos == "1":
+                stats["wins"] += 1
+    qdata = jolpica_get(f"drivers/{ergast_id}/qualifying")
+    for race in qdata.get("MRData", {}).get("RaceTable", {}).get("Races", []):
+        for q in race.get("QualifyingResults", []):
+            if q.get("position") == "1":
+                stats["poles"] += 1
+    return stats
+
+
+def normalise(values, lo=70, hi=99):
+    vals = list(values.values())
+    vmin, vmax = min(vals), max(vals)
+    if vmax == vmin:
+        return {k: round((lo + hi) / 2) for k in values}
+    return {
+        k: round(lo + (v - vmin) / (vmax - vmin) * (hi - lo))
+        for k, v in values.items()
+    }
+
+
+def compute_driver_ratings(driver_ids):
+    """Return normalised 70-99 ratings for every driver based on Jolpica data."""
+    print("\n-> Fetching Jolpica career stats for DNA ratings ...")
+    raw = {}
+    for did in driver_ids:
+        jid = JOLPICA_DRIVER_IDS.get(did, did)
+        print(f"  {did} ...", end=" ", flush=True)
+        raw[did] = fetch_career_stats(jid)
+        r = raw[did]
+        print(f"races={r['races']} wins={r['wins']} poles={r['poles']}")
+
+    def rate(num, den):
+        return num / den if den > 0 else 0.0
+
+    q  = normalise({d: rate(raw[d]["poles"],  max(raw[d]["races"],1))*60
+                     + rate(raw[d]["top10"],  max(raw[d]["races"],1))*40 for d in driver_ids})
+    rp = normalise({d: rate(raw[d]["wins"],   max(raw[d]["races"],1))*50
+                     + rate(raw[d]["podiums"],max(raw[d]["races"],1))*30
+                     + rate(raw[d]["points"], max(raw[d]["races"],1))*20 for d in driver_ids})
+    ty = normalise({d: rate(raw[d]["pos_gained"], max(raw[d]["races"],1)) for d in driver_ids})
+    cn = normalise({d: rate(raw[d]["finished"],max(raw[d]["races"],1))*60
+                     + rate(raw[d]["top10"],  max(raw[d]["races"],1))*40 for d in driver_ids})
+    ag = normalise({d: rate(raw[d]["pos_gained"]+raw[d]["pos_lost"],max(raw[d]["races"],1))*70
+                     + rate(raw[d]["dnfs"],   max(raw[d]["races"],1))*30 for d in driver_ids})
+    wt = normalise({d: WET_BASE.get(d, 73) for d in driver_ids})
+
+    ratings = {}
+    for d in driver_ids:
+        ratings[d] = {
+            "qualifying":     q[d],  "racePace":       rp[d],
+            "tyreManagement": ty[d], "wetWeather":     wt[d],
+            "consistency":    cn[d], "aggression":     ag[d],
+        }
+        r = ratings[d]
+        print(f"  {d:15} Q={r['qualifying']} RP={r['racePace']} "
+              f"TY={r['tyreManagement']} WW={r['wetWeather']} "
+              f"CN={r['consistency']} AG={r['aggression']}")
+    return ratings
+
+
 # ── HTML patcher ───────────────────────────────────────────────────────────────
 
 def patch_html(
     html: str,
-    driver_standings: list[dict],
-    constructor_standings: list[dict],
-    race_results: list[dict],
-    race_statuses: dict[int, str],
+    driver_standings: list,
+    constructor_standings: list,
+    race_results: list,
+    race_statuses: dict,
     updated_at: str,
+    ratings: dict = None,
 ) -> str:
     """
     Replace the inline JSON data blobs inside the standalone HTML file.
@@ -323,7 +471,29 @@ def patch_html(
         completed_count = sum(1 for s in race_statuses.values() if s == "completed")
         print(f"  ✓ race statuses updated ({completed_count} completed)")
 
-    # ── 4. Inject last-updated timestamp into footer ──────────────────────────
+    # ── 4. Driver ratings ─────────────────────────────────────────────────────
+    if ratings:
+        def patch_one_driver(m):
+            block = m.group(0)
+            id_match = re.search(r'"id"\s*:\s*"([^"]+)"', block)
+            if not id_match or id_match.group(1) not in ratings:
+                return block
+            new_r = json.dumps(ratings[id_match.group(1)], ensure_ascii=False)
+            patched, n = re.subn(
+                r'"ratings"\s*:\s*\{[^}]*\}',
+                f'"ratings": {new_r}',
+                block
+            )
+            return patched if n else block
+
+        html, n = re.subn(
+            r'\{[^{}]*"id"\s*:\s*"[^"]+"[^{}]*"ratings"\s*:\s*\{[^}]*\}[^{}]*\}',
+            patch_one_driver,
+            html
+        )
+        print(f"  ✓ driver ratings updated ({n} drivers)")
+
+    # ── 5. Inject last-updated timestamp into footer ──────────────────────────
     html = re.sub(
         r'(F1 2026 Season Analytics).*?(</div>)',
         rf'\1 · Updated {updated_at}\2',
@@ -355,7 +525,7 @@ def main():
         raise SystemExit(1)
 
     # 2. Parse
-    print("\n→ Parsing standings …")
+    print("\n-> Parsing standings ...")
     driver_standings      = parse_driver_standings(wikitext)
     constructor_standings = parse_constructor_standings(wikitext)
     race_results          = parse_race_results(wikitext)
@@ -365,12 +535,16 @@ def main():
     print(f"  constructors: {len(constructor_standings)} entries")
     print(f"  race results: {len(race_results)} races")
 
+    # 2b. Compute driver ratings from Jolpica career stats
+    driver_ratings = compute_driver_ratings(list(JOLPICA_DRIVER_IDS.keys()))
+
     # 3. Patch HTML
-    print("\n→ Patching HTML …")
+    print("\n-> Patching HTML ...")
     html = HTML_FILE.read_text(encoding="utf-8")
     updated_at = datetime.now(timezone.utc).strftime("%d %b %Y %H:%M UTC")
     html = patch_html(html, driver_standings, constructor_standings,
-                      race_results, race_statuses, updated_at)
+                      race_results, race_statuses, updated_at,
+                      ratings=driver_ratings)
 
     # 4. Write
     HTML_FILE.write_text(html, encoding="utf-8")
